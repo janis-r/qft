@@ -1,8 +1,8 @@
 import {Inject} from "../../../src/metadata/decorator/Inject";
-import {CustomModel} from "../../injector/data/CustomModel";
+import {CustomModel} from "../../elements/CustomModel";
 import {PostConstruct} from "../../../src/metadata/decorator/PostConstruct";
 import {Optional} from "../../../src/metadata/decorator/Optional";
-import {CustomModel2} from "../../injector/data/CustomModel2";
+import {CustomModel2} from "../../elements/CustomModel2";
 import {SuperClassWithInjections} from "./SuperClassWithInjections";
 
 export class ClassWithInjections extends SuperClassWithInjections {

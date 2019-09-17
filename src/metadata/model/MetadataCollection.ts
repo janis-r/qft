@@ -1,22 +1,22 @@
 import {Type} from "../../type/Type";
 import {TypeMetadataInternal} from "../data/TypeMetadataInternal";
 import {TypeMetadata} from "../data/TypeMetadata";
+import {ClassType} from "../../type";
 /**
  * Internal class that stores information on registered type metadata
- * @author Jānis Radiņš
  */
 export class MetadataCollection {
 
-    private rawTypeMetadata = new Map<Type, TypeMetadataInternal>();
-    private exportedTypeMetadata = new Map<Type, TypeMetadata>();
-    private inheritedMetadata = new Map<Type, TypeMetadata[]>();
+    private rawTypeMetadata = new Map<ClassType, TypeMetadataInternal>();
+    private exportedTypeMetadata = new Map<ClassType, TypeMetadata>();
+    private inheritedMetadata = new Map<ClassType, TypeMetadata[]>();
 
     /**
      * Get or create internal type metadata object
      * @param type
      * @returns {TypeMetadataInternal}
      */
-    getOrCreateTypeMetadata(type: Type): TypeMetadataInternal {
+    getOrCreateTypeMetadata(type: ClassType): TypeMetadataInternal {
         if (!this.rawTypeMetadata.has(type)) {
             this.rawTypeMetadata.set(type, new TypeMetadataInternal(type));
         }
@@ -29,7 +29,7 @@ export class MetadataCollection {
      * @throws Error if unre4gistered metadata is requested
      * @returns {TypeMetadata}
      */
-    getTypeMetadataExportFormat(type: Type): TypeMetadata {
+    getTypeMetadataExportFormat(type: ClassType): TypeMetadata {
         if (!this.rawTypeMetadata.has(type)) {
             throw new Error(`Type metadata for ${type} is not registered`);
         }

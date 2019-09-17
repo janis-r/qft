@@ -1,4 +1,4 @@
-import {Type} from "../../type";
+import {ClassType, Type} from "../../type";
 import {ModuleDescriptor} from "./ModuleDescriptor";
 import {typeReferenceToString} from "../../util/StringUtil";
 
@@ -8,9 +8,9 @@ import {typeReferenceToString} from "../../util/StringUtil";
  */
 export class TypeMetadataInternal {
 
-    private _constructorArguments: Type[];
+    private _constructorArguments: ClassType[];
     private _optionalConstructorArguments = new Set<number>();
-    private _propertyInjections = new Map<string, Type>();
+    private _propertyInjections = new Map<string, ClassType>();
     private _optionalPropertyInjections = new Set<string>();
     private _postConstructMethods = new Set<string>();
     private _preDestroyMethods = new Set<string>();
@@ -20,14 +20,14 @@ export class TypeMetadataInternal {
      * Create new instance
      * @param type Type of class prototype this instance holds metadataInternal for
      */
-    constructor(public readonly type: Type) {
+    constructor(public readonly type: ClassType) {
 
     }
 
     /**
      * List of type constructor arguments data types
      */
-    get constructorArguments(): ReadonlyArray<Type> {
+    get constructorArguments(): ReadonlyArray<ClassType> {
         return this._constructorArguments;
     }
 
@@ -43,7 +43,7 @@ export class TypeMetadataInternal {
      * List of type property name and data type pairs that should be filled with values from Injector as instance
      * of this type is created.
      */
-    get propertyInjections(): ReadonlyMap<string, Type> {
+    get propertyInjections(): ReadonlyMap<string, ClassType> {
         return this._propertyInjections;
     }
 
@@ -76,7 +76,7 @@ export class TypeMetadataInternal {
         return this._moduleDescriptor;
     }
 
-    setConstructorArguments(value: Type[]): void {
+    setConstructorArguments(value: ClassType[]): void {
         if (this._constructorArguments) {
             throw new Error("Double set of type constructor arguments is attempted and that is clear error!");
         }
@@ -90,7 +90,7 @@ export class TypeMetadataInternal {
         this._optionalConstructorArguments.add(index);
     }
 
-    addPropertyInjection(name: string, type: Type): void {
+    addPropertyInjection(name: string, type: ClassType): void {
         if (this._propertyInjections.has(name)) {
             throw new Error(`Double set of property ${name} injection to ${typeReferenceToString(type)}`);
         }

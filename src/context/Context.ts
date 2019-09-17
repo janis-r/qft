@@ -10,6 +10,7 @@ import {ContextModuleEvent} from "./event/ContextModuleEvent";
 import {InjectionMapping} from "../injector/data/InjectionMapping";
 import {typeReferenceToString} from "../util/StringUtil";
 import {InjectionDescriptor} from "../metadata/data/InjectionDescriptor";
+import {ClassType} from "../type";
 
 /**
  * Application context representation class - a hosting environment for application or its sub context
@@ -273,7 +274,7 @@ export class Context extends EventDispatcher {
         }
     }
 
-    private prepareMapping(mapping: Type | InjectionDescriptor): Type[] {
+    private prepareMapping(mapping: ClassType | InjectionDescriptor): Type[] {
         const injectionsToInstantiate: Type[] = [];
 
         //We have got a singular entry and such are to be mapped as singletons
@@ -301,16 +302,16 @@ export class Context extends EventDispatcher {
                 injectionMapping.toValue(injection.useValue);
             } else if (injection.useType) {
                 if (mapAsSingleton) {
-                    injectionMapping.toSingleton(injection.useType);
+                    injectionMapping.toSingleton(injection.useType as Type);
                 } else {
-                    injectionMapping.toType(injection.useType);
+                    injectionMapping.toType(injection.useType as Type);
                 }
             } else if (mapAsSingleton) {
                 injectionMapping.asSingleton();
             }
 
-            if (injection.instantiate && injectionsToInstantiate.indexOf(injection.map) === -1) {
-                injectionsToInstantiate.push(injection.map);
+            if (injection.instantiate && injectionsToInstantiate.indexOf(injection.map as Type) === -1) {
+                injectionsToInstantiate.push(injection.map as Type);
             }
         }
 

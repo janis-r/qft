@@ -70,6 +70,7 @@ export class Injector extends EventDispatcher {
      * @throws Error if sealed mapping is attempted to be unmapped
      */
     unMap(type: ClassType): void {
+        console.log('>> unMap', typeReferenceToString(type));
         this.throwErrorIfDestroyed();
 
         if (!this.hasDirectMapping(type)) {
@@ -192,13 +193,15 @@ export class Injector extends EventDispatcher {
         const typeMeta = metadata.getTypeDescriptor(type);
 
         // Collect array of constructor arguments, if there are any
-        const constructorArgs: (Type | undefined)[] = [];
-        for (const argData of typeMeta.constructorArguments) {
-            const mappingIsPresent = this.hasMapping(argData.type);
-            if (!mappingIsPresent && !argData.isOptional) {
-                throw new Error(`Constructor argument of type: ${typeReferenceToString(argData.type)} for ${typeReferenceToString(type)} could not be found in Injector!`);
+        const constructorArgs: (ClassType | undefined)[] = [];
+        if (typeMeta.constructorArguments) {
+            for (const argData of typeMeta.constructorArguments) {
+                const mappingIsPresent = this.hasMapping(argData.type);
+                if (!mappingIsPresent && !argData.isOptional) {
+                    throw new Error(`Constructor argument of type: ${typeReferenceToString(argData.type)} for ${typeReferenceToString(type)} could not be found in Injector!`);
+                }
+                constructorArgs.push(mappingIsPresent ? this.get(argData.type) : undefined);
             }
-            constructorArgs.push(mappingIsPresent ? this.get(argData.type) : undefined);
         }
 
         // Create new instance with or without injected constructor arguments!
@@ -277,8 +280,8 @@ export class Injector extends EventDispatcher {
      */
     destroyInstance(target: any): void {
         this.throwErrorIfDestroyed();
-
         const inheritedMetadata = metadata.getInheritedMetadata(target);
+
         // There are no metadata for given type - do nothing
         if (!inheritedMetadata) {
             return;
@@ -288,6 +291,8 @@ export class Injector extends EventDispatcher {
 
         // Join definitions of pre destroy methods from all inherited meta
         for (const meta of inheritedMetadata) {
+            console.log('>> preDestroyMethods', meta.preDestroyMethods);
+
             meta.preDestroyMethods.forEach(method => preDestroyMethods.add(method));
         }
 
@@ -302,7 +307,7 @@ export class Injector extends EventDispatcher {
     destroy(): void {
         this.throwErrorIfDestroyed();
         // Remove all mappings
-        this.mappings.forEach((mapping: InjectionMapping, type: Type) => {
+        this.mappings.forEach((mapping, type) => {
             if (mapping.sealed) {
                 mapping.unseal(this.MASTER_SEAL_KEY);
             }

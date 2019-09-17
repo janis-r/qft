@@ -1,13 +1,13 @@
 import {ClassType, Type} from "../../type";
 import {Injector} from "../Injector";
-import {InjectionValueProvider} from "./InjectionValueProvider";
-import {ClassProvider} from "../provider/ClassProvider";
-import {SingletonProvider} from "../provider/SingletonProvider";
-import {ValueProvider} from "../provider/ValueProvider";
-import {ExistingMappingProvider} from "../provider/ExistingMappingProvider";
+import {InjectedValueProvider} from "../provider/InjectedValueProvider";
+import {ClassProvider} from "../provider/providers/ClassProvider";
+import {ValueProvider} from "../provider/providers/ValueProvider";
+import {ExistingMappingProvider} from "../provider/providers/ExistingMappingProvider";
 import {typeReferenceToString} from "../../util/StringUtil";
 import {ProviderValueFactory} from "./ProviderValueFactory";
-import {FactoryProvider} from "../provider/FactoryProvider";
+import {FactoryProvider} from "../provider/providers/FactoryProvider";
+import {InjectedSingletonValueProvider} from "../provider/InjectedSingletonValueProvider";
 
 /**
  * Injector data mapping instance.
@@ -17,19 +17,19 @@ export class InjectionMapping {
     private _sealed: boolean = false;
     private _destroyed: boolean = false;
 
-    private provider: InjectionValueProvider;
+    private provider: InjectedValueProvider;
     private sealKey: Object;
     private defaultProviderSet: boolean;
 
     /**
      * Create new instance of injector mapping
-     * @param type Mapping type of injected value by which it will be requested from injector
-     * @param injector Hosting Injector instance of current mapping
-     * @param masterSealKey Master seal key is necessary for unsealed by injector during destroy
+     * @param type Constructable or abstract class type by which value will be mapped
+     * @param injector Injector instance
+     * @param masterSealKey Master seal key
      */
     constructor(readonly type: ClassType, readonly injector: Injector, private readonly masterSealKey: Object) {
         this.defaultProviderSet = true;
-        // Set class provider as a default value provider
+        // Set class provider as a default value provider, so if no more configuration is set, this will stay as default behavior
         this.setProvider(new ClassProvider(injector, type as Type));
     }
 
@@ -53,7 +53,13 @@ export class InjectionMapping {
      * @returns {InjectionMapping} The InjectionMapping the method is invoked on
      */
     asSingleton(): this {
-        this.setProvider(new SingletonProvider(this.injector, this.type as Type));
+        if (this._sealed || this._destroyed) {
+            throw new Error(`Can't change a sealed or destroyed mapping.`);
+        }
+        if (!this.provider || !(this.provider instanceof InjectedSingletonValueProvider)) {
+            throw new Error(`Injection provider is not set or it's not Singleton value provider`);
+        }
+        this.provider.asSingleton();
         return this;
     }
 
@@ -64,8 +70,12 @@ export class InjectionMapping {
      * @returns {InjectionMapping} The InjectionMapping the method is invoked on
      */
     toSingleton(type: Type): this {
-        // TODO: Type<T> extends class Type <T>?
-        this.setProvider(new SingletonProvider(this.injector, type));
+        if (this._sealed || this._destroyed) {
+            throw new Error(`Can't change a sealed or destroyed mapping.`);
+        }
+        const provider = new ClassProvider(this.injector, type);
+        provider.asSingleton();
+        this.setProvider(provider);
         return this;
     }
 
@@ -76,6 +86,9 @@ export class InjectionMapping {
      * @returns {InjectionMapping} The InjectionMapping the method is invoked on
      */
     toType(type: Type): this {
+        if (this._sealed || this._destroyed) {
+            throw new Error(`Can't change a sealed or destroyed mapping.`);
+        }
         this.setProvider(new ClassProvider(this.injector, type));
         return this;
     }
@@ -85,6 +98,9 @@ export class InjectionMapping {
      * @param value Hard coded value to be returned for each request
      */
     toValue(value: any): this {
+        if (this._sealed || this._destroyed) {
+            throw new Error(`Can't change a sealed or destroyed mapping.`);
+        }
         this.setProvider(new ValueProvider(value));
         return this;
     }
@@ -94,11 +110,23 @@ export class InjectionMapping {
      * @param type Existing mapping type to use as for a return value.
      */
     toExisting(type: ClassType): this {
+        if (this._sealed || this._destroyed) {
+            throw new Error(`Can't change a sealed or destroyed mapping.`);
+        }
+
         this.provider = new ExistingMappingProvider(this.injector, type);
         return this;
     }
 
+    /**
+     *
+     * @param factory
+     */
     toFactory(factory: ProviderValueFactory) {
+        if (this._sealed || this._destroyed) {
+            throw new Error(`Can't change a sealed or destroyed mapping.`);
+        }
+
         this.provider = new FactoryProvider(this.injector, factory);
         return this;
     }
@@ -109,6 +137,9 @@ export class InjectionMapping {
      * @returns {Object} Seal key to be used for unseal operation.
      */
     seal(): Object {
+        if (this._sealed) {
+            throw new Error(`Can't seal sealed mapping.`);
+        }
         this._sealed = true;
         this.sealKey = {};
         return this.sealKey;
@@ -140,7 +171,7 @@ export class InjectionMapping {
         if (this._destroyed) {
             throw new Error(`InjectionMapping for type: ${this.type} is already destroyed!`);
         }
-        return this.provider.getProviderValue();
+        return this.provider.getValue();
     }
 
     /**
@@ -158,7 +189,7 @@ export class InjectionMapping {
         this._destroyed = true;
     }
 
-    private setProvider(provider: InjectionValueProvider): void {
+    private setProvider(provider: InjectedValueProvider): void {
         if (this._destroyed) {
             throw new Error(`Can't change a destroyed mapping`);
         }

@@ -1,5 +1,5 @@
 import {Inject} from "../../../src/metadata/decorator/Inject";
-import {CustomModel2} from "../../injector/data/CustomModel2";
+import {CustomModel2} from "../../elements/CustomModel2";
 
 export class SuperClassWithInjections {
 

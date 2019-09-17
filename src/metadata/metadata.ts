@@ -28,14 +28,12 @@ export const metadata = {
      * @returns {boolean}
      */
     hasMetadata: (type: Type): boolean => metadataCollection.typeMetadataIsRegistered(type),
-
     /**
      * Retrieve some type metadataInternal
      * @param type
      * @returns {TypeMetadataInternal}
      */
     getTypeDescriptor: (type: Type): TypeMetadata =>  metadataCollection.getTypeMetadataExportFormat(type),
-
     /**
      * Get inherited metadata for some instance (including its own prototype)
      * @param instance Any class instance that might be inheriting from any of metadata clients

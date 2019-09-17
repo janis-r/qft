@@ -1,4 +1,4 @@
-import {Type} from "../../type";
+import {ClassType} from "../../type";
 
 /**
  * Injectable instance constructor argument entry
@@ -11,7 +11,7 @@ export interface ConstructorArg {
     /**
      * Type to be extracted from Injector as this argument is applied
      */
-    readonly type: Type;
+    readonly type: ClassType;
     /**
      * Defines if argument is optional and no error should be produced if requested type is not found in Injector
      */
