@@ -70,7 +70,6 @@ export class Injector extends EventDispatcher {
      * @throws Error if sealed mapping is attempted to be unmapped
      */
     unMap(type: ClassType): void {
-        console.log('>> unMap', typeReferenceToString(type));
         this.throwErrorIfDestroyed();
 
         if (!this.hasDirectMapping(type)) {
@@ -291,8 +290,6 @@ export class Injector extends EventDispatcher {
 
         // Join definitions of pre destroy methods from all inherited meta
         for (const meta of inheritedMetadata) {
-            console.log('>> preDestroyMethods', meta.preDestroyMethods);
-
             meta.preDestroyMethods.forEach(method => preDestroyMethods.add(method));
         }
 

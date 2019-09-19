@@ -1,7 +1,6 @@
 import {EventGuard} from "../../eventDispatcher/api/EventGuard";
 /**
  * Interface describing public API of a Command Mapping returned by CommandMap map().
- * @author Jānis Radiņš / Kristaps Peļņa
  */
 export interface CommandMapping {
     /**

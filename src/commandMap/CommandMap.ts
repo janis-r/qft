@@ -1,22 +1,20 @@
 import {Command} from "./command/Command";
 import {Event} from "../eventDispatcher/event/Event";
 import {CommandMappingImpl} from "./data/impl/CommandMappingImpl";
-import {Type} from "../type/Type";
+import {Type} from "../type";
 import {CommandMapping} from "./data/CommandMapping";
 import {Inject} from "../metadata/decorator/Inject";
 import {Injector} from "../injector/Injector";
-import {AsyncCommand} from "./command/AsyncCommand";
 import {typeReferenceToString} from "../util/StringUtil";
 
 /**
  * Event command map describes event name to command class mappings and is useful as small pieces of control code
  * should be executed upon some event notification.
- * @author Jānis Radiņš / Kristaps Peļņa
  */
 export class CommandMap {
 
     @Inject()
-    protected injector: Injector;
+    protected readonly injector: Injector;
 
     //Private storage to all command mappings
     private commandMappings: CommandMappingImpl[] = [];
@@ -40,14 +38,13 @@ export class CommandMap {
         if (!command) {
             throw new Error("CommandMap: Only valid Commands can be mapped to events");
         }
+
         const mappings = this.getEventToCommandMappings(eventType);
-        for (const mapping of mappings) {
-            if (mapping.command === command) {
-                const message = `CommandMap: Event to command mapping already exists. UnMap it before calling map again.`;
-                const info = `event:${eventType} command: ${typeReferenceToString(command)}`;
-                console.warn(message + " " + info);
-                return null;
-            }
+        if (mappings.some(entry => entry.command === command)) {
+            const message = `CommandMap: Event to command mapping already exists. UnMap it before calling map again.`;
+            const info = `event:${eventType} command: ${typeReferenceToString(command)}`;
+            console.warn(message + " " + info);
+            return null;
         }
 
         const mapping = new CommandMappingImpl(eventType, command);
@@ -57,7 +54,7 @@ export class CommandMap {
     }
 
     /**
-     * Remove all command mappings from all event type.
+     * Remove all command mappings from all event types.
      * @returns {boolean} which indicates if the unMapping has been successful.
      */
     unMap(): boolean;
@@ -85,17 +82,17 @@ export class CommandMap {
      * @private
      */
     unMap(eventType?: string, command?: Type<Command>): boolean {
-        if (this.commandMappings.length < 1) {
+        if (this.commandMappings.length === 0) {
             return false;
         }
 
-        //If eventType is not specified, remove all mappings
+        // If eventType is not specified, remove all mappings
         if (!eventType) {
             this.commandMappings = [];
             return true;
         }
 
-        let mappings: CommandMappingImpl[] = this.getEventToCommandMappings(eventType, command);
+        const mappings = this.getEventToCommandMappings(eventType, command);
         if (mappings.length === 0) {
             return false; //no mappings found
         }
@@ -134,20 +131,12 @@ export class CommandMap {
         const event = eventTypeOrEvent instanceof Event ? eventTypeOrEvent : new Event(eventTypeOrEvent, eventData);
 
         const commands = this.getEventToCommandMappings(event.type);
-        while (commands.length > 0) {
-            const command = commands.shift();
-            //Execute command only if execution is allowed by guards
-            if (!command.executionAllowedByGuards(event)) {
-                continue;
+        for (const command of commands) {
+            if (command.executionAllowedByGuards(event)) {
+                this.executeCommand(command, event);
             }
-
-            this.executeCommand(command, event);
         }
     }
-
-    //--------------------
-    //  Private methods
-    //--------------------
 
     /**
      * Get list of all commands assigned to particular event name.
@@ -156,33 +145,24 @@ export class CommandMap {
      * @returns {CommandMappingImpl[]} List of commands mappings attached to requested event type.
      */
     private getEventToCommandMappings(eventType: string, command?: Type<Command>): CommandMappingImpl[] {
-        const mappings: CommandMappingImpl[] = [];
-        for (const mapping of this.commandMappings) {
-            if (mapping.eventType !== eventType) {
-                continue;
-            }
-            if (command && mapping.command !== command) {
-                continue;
-            }
-            mappings.push(mapping);
-        }
-        return mappings;
+        return this.commandMappings
+            .filter(mapping => mapping.eventType === eventType)
+            .filter(mapping => !command || mapping.command === command);
     }
 
     /**
      * Create command instance and execute it.
      */
     private executeCommand(commandMapping: CommandMappingImpl, event: Event): void {
-        const commandInstance = this.createCommandInstance(commandMapping, event);
+        const {injector} = this;
+        const command = this.createCommandInstance(commandMapping, event);
 
-        if (commandInstance instanceof AsyncCommand) {
-            commandInstance.listenOnComplete(
-                () => this.injector.destroyInstance(commandInstance)
-            );
-            commandInstance.execute();
+        const executePromise = command.execute();
+        if (executePromise && executePromise instanceof Promise) {
+            // Await till command is executed before destroying Command instance for async Commands
+            executePromise.then(() => injector.destroyInstance(command));
         } else {
-            commandInstance.execute();
-            this.injector.destroyInstance(commandInstance);
+            injector.destroyInstance(command)
         }
 
         if (commandMapping.executeOnce) {
@@ -190,24 +170,16 @@ export class CommandMap {
         }
     }
 
-    //--------------------
-    //  Protected methods
-    //--------------------
-
     /**
      * Implementation of a routine how individual command instance is created.
      * (This functionality may be overridden by sub classes)
      */
     protected createCommandInstance(commandMapping: CommandMappingImpl, event: Event): Command {
-        //Create a subInjector and provide a mapping of the Event by its class
+        // Create a subInjector and provide a mapping of the Event by its class
         const subInjector = this.injector.createSubInjector();
-        subInjector.map(<Type> event.constructor).toValue(event);
+        subInjector.map(<Type>event.constructor).toValue(event);
         return subInjector.instantiateInstance(commandMapping.command);
     }
-
-    //--------------------
-    //  Public properties
-    //--------------------
 
     /**
      * Number of active mappings on this Command Map instance.

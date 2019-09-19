@@ -1,6 +1,5 @@
 import {Command} from "./Command";
-import {AsyncCommand} from "./AsyncCommand";
-import {Type} from "../../type/Type";
+import {Type} from "../../type";
 import {Injector} from "../../injector/Injector";
 import {Inject} from "../../metadata/decorator/Inject";
 import {EventGuard} from "../../eventDispatcher/api/EventGuard";
@@ -8,83 +7,55 @@ import {Event} from "../../eventDispatcher/event/Event";
 
 /**
  * Macro command provides the functionality of sequential execution of a sub-command batch.
- * @author Kristaps Peļņa
  */
-export class MacroCommand extends AsyncCommand {
+export abstract class MacroCommand extends Command {
 
     @Inject()
-    protected injector: Injector;
+    protected readonly injector: Injector;
 
     @Inject()
-    protected event: Event;
+    protected readonly event: Event;
 
-    protected subCommands: SubCommand[] = [];
+    private readonly commands: SubCommand[] = [];
 
-    //--------------------
-    //  Public methods
-    //--------------------
+    constructor (commands: (SubCommand['type'] | SubCommand)[]) {
+        super();
+        this.commands = commands.map(entry => !isSubCommand(entry) ? {type: entry} : entry);
+    }
 
     /**
-     * Add a command to the end of the command list.
-     * @param commandType Type of the Command
-     * @param guards Optional list of event guards for this commands execution
-     * @returns {MacroCommand}
+     * Execute macro command.
      */
-    add(commandType: Type<Command>, guards?: EventGuard[]): this {
-        if (!commandType) {
-            throw new Error("MacroCommand: Can not add a null command!");
+    async execute(): Promise<void> {
+        const {commands} = this;
+        if (!commands || !commands.length) {
+            return;
         }
 
-        this.subCommands.push({commandType: commandType, guards: guards});
-        return this;
+        for (const command of commands) {
+            await this.executeSubCommand(command);
+        }
     }
 
-    /**
-     * Remove a command from the sub-command list.
-     * @param commandType Type of the Command by which it was added
-     * @returns {MacroCommand}
-     */
-    remove(commandType: Type<Command>): this {
-        if (!commandType) {
-            throw new Error("MacroCommand: Can not remove a null command!");
+    protected executeSubCommand<T = void>({type, guards} : SubCommand): T | Promise<T> {
+        const {injector} = this;
+        // Execution is blocked by a guard
+        if (this.executionAllowedByGuards(guards) === false) {
+            return;
         }
 
-        const index = this.subCommands.indexOf(this.getSubCommand(commandType));
-        if (index === -1) {
-            throw new Error("MacroCommand: A command must be added before it can be removed. Command: " + commandType);
+        const command = injector.instantiateInstance(type);
+        const possiblePromise = command.execute();
+
+        // If we're dealing with async Command - wait command to execute before dismantling Command instance
+        if (possiblePromise && isPromise(possiblePromise)) {
+            return new Promise<any>(async resolve => {
+                const response = await possiblePromise;
+                injector.destroyInstance(command);
+                resolve(response);
+            });
         }
-
-        this.subCommands.splice(index, 1);
-        return this;
-    }
-
-    /**
-     * Check if this MacroCommand has a specific commandType
-     * @param commandType
-     * @returns {boolean}
-     */
-    has(commandType: Type<Command>): boolean {
-        return !!this.getSubCommand(commandType);
-    }
-
-    /**
-     * Main macro command execution entry.
-     */
-    execute(): void {
-        this.executeNextCommand();
-    }
-
-    //--------------------
-    //  Private methods
-    //--------------------
-
-    /**
-     * Get Command type and guard data
-     * @param {Type<Command>} commandType Command type
-     * @returns {SubCommand}
-     */
-    private getSubCommand(commandType: Type<Command>): SubCommand {
-        return this.subCommands.find(subCommand => subCommand.commandType === commandType);
+        injector.destroyInstance(command);
     }
 
     /**
@@ -95,62 +66,19 @@ export class MacroCommand extends AsyncCommand {
         if (!guards) {
             return true;
         }
-
-        for (const guard of guards) {
-            if (!guard(this.event)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    //--------------------
-    //  Protected methods
-    //--------------------
-
-    /**
-     * Execute next command from the subCommands list as FiFo (first in, first out).
-     * If there are no commands left, executeComplete will be called.
-     */
-    protected executeNextCommand(): void {
-        if (this.subCommands.length === 0) {
-            this.complete();
-            return;
-        }
-
-        const commandDescriptor = this.subCommands.shift();
-
-        //If execution is blocked by a guard, then move to the next command at once
-        if (!this.executionAllowedByGuards(commandDescriptor.guards)) {
-            this.executeNextCommand();
-            return;
-        }
-
-        const command = this.injector.instantiateInstance(commandDescriptor.commandType);
-
-        if (command instanceof AsyncCommand) {
-            command.listenOnComplete(
-                () => this.commandComplete(command, commandDescriptor.commandType)
-            );
-            command.execute();
-        } else {
-            command.execute();
-            this.commandComplete(command, commandDescriptor.commandType);
-        }
-    }
-
-    /**
-     * Executed on each command complete.
-     * @param commandInstance Instance of the command which has just completed
-     * @param commandType Type/class of the executed command
-     */
-    protected commandComplete(commandInstance: Command, commandType: Type<Command>): void {
-        this.executeNextCommand();
+        return guards.some(guard => guard(this.event) === false) === false;
     }
 
 }
 
-export type SubCommand = {
-    commandType: Type<Command>,
+type SubCommand = {
+    type: Type<Command>,
     guards?: EventGuard[]
 };
+
+const isSubCommand = (entry: unknown): entry is SubCommand => {
+    const keys = Object.keys(entry);
+    return keys.length > 0 && keys.length <= 2 && keys.indexOf("type") !== -1;
+};
+
+const isPromise = (entry: unknown): entry is Promise<any> => Promise.resolve(entry) === entry;

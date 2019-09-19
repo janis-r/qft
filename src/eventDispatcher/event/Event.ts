@@ -1,7 +1,6 @@
 /**
  * Basic event class which holds event type and data properties and which can be used as it is or
  * could be extended by any custom event class.
- * @author Jānis Radiņš
  */
 export class Event {
 

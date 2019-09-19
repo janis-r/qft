@@ -3,7 +3,7 @@ import {Injector} from "../../Injector";
 import {ClassType} from "../../../type";
 
 /**
- * Provide value of existing mapping of required type
+ * Forward request to another, existing injector mapping
  */
 export class ExistingMappingProvider<T = any> implements InjectedValueProvider<T> {
 

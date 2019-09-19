@@ -1,3 +1,4 @@
+import {Command} from "../../commandMap/command/Command";
 import {Type} from "../../type";
 
 /**
@@ -11,7 +12,7 @@ export interface CommandMappingDescriptor {
     /**
      * Command type that should be invoked as event name listed in event property is fired in system context.
      */
-    readonly command: Type;
+    readonly command: Type<Command>;
     /**
      * Describes if command should be executed only once.
      * @default false

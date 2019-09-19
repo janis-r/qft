@@ -1,5 +1,4 @@
 import "reflect-metadata";
-
 import {AbstractClass} from "./elements/AbstractClass";
 import {AbstractClassImpl} from "./elements/AbstractClassImpl";
 import {CustomModel2} from "./elements/CustomModel2";
@@ -9,6 +8,8 @@ import {CustomModelWithInject} from "./elements/CustomModelWithInject";
 import {CustomExtendedModel} from "./elements/CustomExtendedModel";
 import {CustomModelWithPostConstruct} from "./elements/CustomModelWithPostConstruct";
 import {Injector} from "../src/injector/Injector";
+import {Injectable} from "../src/metadata/decorator/Injectable";
+import {metadata} from "../src/metadata/metadata";
 
 describe("Dependency injector configuration", () => {
 
@@ -64,6 +65,7 @@ describe("Dependency injector configuration", () => {
     });
 
     it("Class can be mapped to factory", () => {
+        injector.map(CustomModel);
         injector.map(AbstractClass).toFactory(() => new AbstractClassImpl());
         expect(injector.get(AbstractClass)).toBeInstanceOf(AbstractClassImpl);
     });
@@ -143,15 +145,20 @@ describe("Dependency injector configuration", () => {
         expect(() => mapping.getInjectedValue()).toThrow(Error);
     });
 
-    it("Destroy of injector will make all PreDestroy methods invoked and render injector useless", () => {
+    it("Destroy of injected instance will make all PreDestroy methods invoked", () => {
 
         injector.map(CustomModelWithInject).asSingleton();
-        injector.get(CustomModelWithInject);
+        const instance = injector.get(CustomModelWithInject);
 
         const callback = jest.fn();
-        CustomModelWithInject.onDestroy = () => callback;
-        injector.destroy();
+        CustomModelWithInject.onDestroy = callback;
+        injector.destroyInstance(instance);
         expect(callback).toBeCalled();
+    });
+
+    it("Destroy of injector will  render injector useless", () => {
+        injector.map(CustomModelWithInject).asSingleton();
+        injector.destroy();
 
         [
             () => injector.createSubInjector(),
@@ -201,6 +208,7 @@ describe("Apply injections", () => {
 
     it("Instance must be available in Injector as @PostConstruct is invoked", done => {
         injector.map(CustomModelWithPostConstruct).asSingleton();
+
         let instance: CustomModelWithPostConstruct;
 
         CustomModelWithPostConstruct.onPostConstruct = () => {

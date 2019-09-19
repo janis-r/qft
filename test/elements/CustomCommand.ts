@@ -1,7 +1,6 @@
 import {Command} from "../../src/commandMap/command/Command";
 /**
  * Custom Command class for testing purposes
- * @author Kristaps Peļņa
  */
 export class CustomCommand extends Command {
 

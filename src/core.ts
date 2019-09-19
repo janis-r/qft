@@ -1,6 +1,5 @@
 import "reflect-metadata";
 
-export * from "./commandMap/command/AsyncCommand";
 export * from "./commandMap/command/Command";
 export * from "./commandMap/command/MacroCommand";
 export * from "./commandMap/data/CommandMapping";

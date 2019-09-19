@@ -2,7 +2,6 @@ import {Event} from "../event/Event";
 /**
  * Describes a method that is used to guard execution or certain action and validates data on whether it is
  * worth of execution
- * @author Jānis Radiņš
  */
 export interface EventGuard {
     /**

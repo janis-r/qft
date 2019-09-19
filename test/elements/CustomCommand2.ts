@@ -1,4 +1,4 @@
-import {Command} from "../../../../src/commandMap/command/Command";
+import {Command} from "../../src/commandMap/command/Command";
 /**
  * Custom Command class for testing purposes
  * @author Kristaps Peļņa

@@ -1,14 +1,13 @@
 import {metadataInternal} from "../metadata";
-import {Type} from "../../type";
+import {ClassType, Type} from "../../type";
 
 /**
  * Mark method to be invoked as instance, client of injector, is to be destroyed and some mappings should be destroyed
  * manually just before its gone for good.
- * @author Jānis Radiņš
  */
 export function PreDestroy(): Function {
-    return (target: Type, method: string): Type => {
-        metadataInternal.getTypeDescriptor(<Type>target.constructor).addPreDestroyMethod(method);
+    return (target: ClassType, method: string): ClassType => {
+        metadataInternal.getTypeDescriptor(<ClassType>target.constructor).addPreDestroyMethod(method);
         return target;
     };
 }

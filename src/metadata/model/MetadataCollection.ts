@@ -1,7 +1,7 @@
-import {Type} from "../../type/Type";
+import {ClassType, Type} from "../../type";
 import {TypeMetadataInternal} from "../data/TypeMetadataInternal";
 import {TypeMetadata} from "../data/TypeMetadata";
-import {ClassType} from "../../type";
+
 /**
  * Internal class that stores information on registered type metadata
  */
@@ -45,7 +45,7 @@ export class MetadataCollection {
      * @param type
      * @returns {boolean}
      */
-    typeMetadataIsRegistered(type: Type): boolean {
+    typeMetadataIsRegistered(type: ClassType): boolean {
         return this.rawTypeMetadata.has(type);
     }
 

@@ -83,6 +83,7 @@ describe("Metadata module", () => {
         const context = new Context();
         context.configure(CustomModule2);
         context.initialize();
+        expect(context.injector.hasDirectMapping(RequiredClass)).toBe(false)
     });
 
     it("@Module Class mapping in metadata is parsed right", () => {

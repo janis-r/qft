@@ -3,7 +3,7 @@ import {Type} from "../../../type";
 import {InjectedSingletonValueProvider} from "../InjectedSingletonValueProvider";
 
 /**
- * Class provider that will return new instance of required type upon any request.
+ * Class provider that will spawn instance of required type upon request.
  */
 export class ClassProvider<T = any> extends InjectedSingletonValueProvider<T> {
 
@@ -15,8 +15,9 @@ export class ClassProvider<T = any> extends InjectedSingletonValueProvider<T> {
 
     getValue(): T {
         if (!this.lastValue || !this.isSingleton) {
-            this.lastValue = this.injector.instantiateInstance(this.type);
+            this.lastValue = this.injector.instantiateInstance(this.type, true);
         }
         return this.lastValue;
     }
+
 }

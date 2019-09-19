@@ -1,4 +1,4 @@
-import {Type} from "../type";
+import {ClassType} from "../type";
 import {TypeMetadataInternal} from "./data/TypeMetadataInternal";
 import {TypeMetadata} from "./data/TypeMetadata";
 import {MetadataCollection} from "./model/MetadataCollection";
@@ -15,7 +15,7 @@ export const metadataInternal = {
      * @param type
      * @returns {TypeMetadataInternal}
      */
-    getTypeDescriptor: (type: Type): TypeMetadataInternal =>  metadataCollection.getOrCreateTypeMetadata(type)
+    getTypeDescriptor: (type: ClassType): TypeMetadataInternal => metadataCollection.getOrCreateTypeMetadata(type)
 };
 
 /**
@@ -27,13 +27,13 @@ export const metadata = {
      * @param type
      * @returns {boolean}
      */
-    hasMetadata: (type: Type): boolean => metadataCollection.typeMetadataIsRegistered(type),
+    hasMetadata: (type: ClassType): boolean => metadataCollection.typeMetadataIsRegistered(type),
     /**
      * Retrieve some type metadataInternal
      * @param type
      * @returns {TypeMetadataInternal}
      */
-    getTypeDescriptor: (type: Type): TypeMetadata =>  metadataCollection.getTypeMetadataExportFormat(type),
+    getTypeDescriptor: (type: ClassType): TypeMetadata => metadataCollection.getTypeMetadataExportFormat(type),
     /**
      * Get inherited metadata for some instance (including its own prototype)
      * @param instance Any class instance that might be inheriting from any of metadata clients
