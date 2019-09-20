@@ -5,7 +5,7 @@
 export function typeReferenceToString(type: Function): string {
     const str = String(type);
     if (str.match(/^function/)) {
-        return str.match(/^function (\w+\([^\)]*\))/)[1];
+        return str.match(/^function (\w+\([^)]*\))/)[1];
     }
 
     if (str.match(/^class/)) {

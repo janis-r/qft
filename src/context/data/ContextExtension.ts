@@ -2,7 +2,6 @@ import {Context} from "../Context";
 /**
  * Interface describing an extension of application context which should be implementing custom functionality
  * that should be available for a Context class, once this extension is installed.
- * @author Jānis Radiņš
  */
 export interface ContextExtension {
 

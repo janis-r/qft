@@ -1,17 +1,15 @@
 import {Event} from "../../eventDispatcher/event/Event";
 import {ModuleDescriptor} from "../../metadata/data/ModuleDescriptor";
 import {Context} from "../Context";
-import {Type} from "../../type/Type";
+import {Type} from "../../type";
 
 /**
  * Context module action event
- * @author Jānis Radiņš / Kristaps Peļņa
  */
 export class ContextModuleEvent extends Event {
 
     /**
      * Dispatched as new module is registered with Context
-     * @type {string}
      */
     static readonly REGISTER_MODULE = "registerModule";
 
@@ -23,9 +21,9 @@ export class ContextModuleEvent extends Event {
      * @param {ModuleDescriptor} moduleDescriptor
      */
     constructor(type: string,
-                public readonly context: Context,
-                public readonly moduleType: Type,
-                public readonly moduleDescriptor: ModuleDescriptor) {
+                readonly context: Context,
+                readonly moduleType: Type,
+                readonly moduleDescriptor: ModuleDescriptor) {
         super(type);
     }
 }

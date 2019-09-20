@@ -3,7 +3,7 @@ import {AbstractClass} from "./elements/AbstractClass";
 import {AbstractClassImpl} from "./elements/AbstractClassImpl";
 import {CustomModel2} from "./elements/CustomModel2";
 import {CustomModel} from "./elements/CustomModel";
-import {SuperClassWithInjections} from "./metadata/data/SuperClassWithInjections";
+import {SuperClassWithInjections} from "./elements/SuperClassWithInjections";
 import {CustomModelWithInject} from "./elements/CustomModelWithInject";
 import {CustomExtendedModel} from "./elements/CustomExtendedModel";
 import {CustomModelWithPostConstruct} from "./elements/CustomModelWithPostConstruct";

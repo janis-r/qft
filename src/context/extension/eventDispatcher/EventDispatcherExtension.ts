@@ -4,7 +4,6 @@ import {EventDispatcher} from "../../../eventDispatcher/EventDispatcher";
 import {ContextLifecycleEvent} from "../../event/ContextLifecycleEvent";
 /**
  * Event dispatcher extension which adds EventDispatcher singleton to Context scope.
- * @author Jānis Radiņš
  */
 export class EventDispatcherExtension implements ContextExtension {
 

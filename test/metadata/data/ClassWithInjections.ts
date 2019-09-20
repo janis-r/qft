@@ -3,7 +3,7 @@ import {CustomModel} from "../../elements/CustomModel";
 import {PostConstruct} from "../../../src/metadata/decorator/PostConstruct";
 import {Optional} from "../../../src/metadata/decorator/Optional";
 import {CustomModel2} from "../../elements/CustomModel2";
-import {SuperClassWithInjections} from "./SuperClassWithInjections";
+import {SuperClassWithInjections} from "../../elements/SuperClassWithInjections";
 
 export class ClassWithInjections extends SuperClassWithInjections {
 

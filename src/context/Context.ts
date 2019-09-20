@@ -1,29 +1,26 @@
 import {EventDispatcher} from "../eventDispatcher/EventDispatcher";
 import {Injector} from "../injector/Injector";
-import {Type} from "../type/Type";
+import {ClassType, Type} from "../type";
 import {ContextExtension} from "./data/ContextExtension";
 import {ContextLifecycleEvent} from "./event/ContextLifecycleEvent";
 import {ModuleDescriptor} from "../metadata/data/ModuleDescriptor";
 import {metadata} from "../metadata/metadata";
-import {TypeMetadata} from "../metadata/data/TypeMetadata";
 import {ContextModuleEvent} from "./event/ContextModuleEvent";
-import {InjectionMapping} from "../injector/data/InjectionMapping";
 import {typeReferenceToString} from "../util/StringUtil";
 import {InjectionDescriptor} from "../metadata/data/InjectionDescriptor";
-import {ClassType} from "../type";
+import {InjectedSingletonValueProvider} from "../injector/provider/InjectedSingletonValueProvider";
 
 /**
  * Application context representation class - a hosting environment for application or its sub context
  * TODO: Add handling of child and parent contexts in this class
- * @author Jānis Radiņš / Kristaps Peļņa
  */
 export class Context extends EventDispatcher {
 
     private _initialized: boolean = false;
     private _destroyed: boolean = false;
 
-    private extensions: Type<ContextExtension>[] = [];
-    private extensionInstances: ContextExtension[] = [];
+    private extensions = new Set<Type<ContextExtension>>();
+    private extensionInstances = new Set<ContextExtension>();
 
     private modules: Type[] = [];
     private moduleMetadata: Map<Type, ModuleDescriptor> = new Map<Type, ModuleDescriptor>();
@@ -62,10 +59,6 @@ export class Context extends EventDispatcher {
         return this._destroyed;
     }
 
-    //--------------------------
-    //  Public methods
-    //--------------------------
-
     /**
      * Install Context extensions
      * @param extension A single entry or list of Type<ContextExtension> entries
@@ -77,7 +70,7 @@ export class Context extends EventDispatcher {
         }
 
         this.throwErrorIfDestroyed();
-        this.extensions.push(...extension);
+        extension.forEach(entry => this.extensions.add(entry));
 
         return this;
     }
@@ -93,12 +86,8 @@ export class Context extends EventDispatcher {
         }
         this.throwErrorIfDestroyed();
 
-        for (const ext of extension) {
-            const index = this.extensions.indexOf(ext);
-            if (index !== -1) {
-                this.extensions.splice(index, 1);
-            }
-        }
+        extension.forEach(entry => this.extensions.delete(entry));
+
         return this;
     }
 
@@ -108,7 +97,7 @@ export class Context extends EventDispatcher {
      * @returns {boolean}
      */
     hasExtension(extension: Type<ContextExtension>): boolean {
-        return this.extensions.indexOf(extension) !== -1;
+        return this.extensions.has(extension);
     }
 
     /**
@@ -185,7 +174,7 @@ export class Context extends EventDispatcher {
         //this will invoke preDestroy on all singleton instances spawned via Injector
         this.injector.destroy();
 
-        this.extensionInstances = [];
+        this.extensionInstances.clear();
         this.moduleMetadata = null;
 
         this._destroyed = true;
@@ -194,10 +183,6 @@ export class Context extends EventDispatcher {
         this.dispatchEvent(new ContextLifecycleEvent(ContextLifecycleEvent.POST_DESTROY, this));
         this.removeAllEventListeners();
     }
-
-    //--------------------------
-    //  Private methods
-    //--------------------------
 
     private throwErrorIfDestroyed(): void {
         if (this._destroyed) {
@@ -209,14 +194,12 @@ export class Context extends EventDispatcher {
         for (const extensionType of this.extensions) {
             const extension = new extensionType();
             extension.extend(this);
-            this.extensionInstances.push(extension);
+            this.extensionInstances.add(extension);
         }
     }
 
     private prepareModules(): void {
-        for (const moduleType of this.modules) {
-            this.registerModule(moduleType);
-        }
+        this.modules.forEach(module => this.registerModule(module));
     }
 
     private registerModule(module: Type, parent?: Type): void {
@@ -233,22 +216,20 @@ export class Context extends EventDispatcher {
             console.warn(`Context warn: ${typeReferenceToString(module)} has no @Module metadata thus it cannot be a module in Context understanding.`);
             return;
         }
-        let meta: TypeMetadata = metadata.getTypeDescriptor(module);
+        const meta = metadata.getTypeDescriptor(module);
         if (!meta.moduleDescriptor) {
             console.warn(`Context warn: ${typeReferenceToString(module)} metadata has no moduleDescriptor thus it cannot be a module in Context understanding.`);
             return;
         }
 
-        //Loop through module dependencies and register those modules just before module which requires them
-        //just as module might want to override some mappings from required module and that require its mappings to be
-        //executed after imported module
+        // Loop through module dependencies and register those modules just before module which requires them
+        // just as module might want to override some mappings from required module and that require its mappings to be
+        // executed after imported module
         if (meta.moduleDescriptor.requires && meta.moduleDescriptor.requires.length > 0) {
-            for (let requiredModule of meta.moduleDescriptor.requires) {
-                this.registerModule(requiredModule, module);
-            }
+            meta.moduleDescriptor.requires.forEach(requiredModule => this.registerModule(requiredModule, module));
         }
         this.moduleMetadata.set(module, meta.moduleDescriptor);
-        //Dispatch event so Context extensions can react to new module added to Context scope
+        // Dispatch event so Context extensions can react to new module added to Context scope
         this.dispatchEvent(new ContextModuleEvent(
             ContextModuleEvent.REGISTER_MODULE,
             this,
@@ -258,72 +239,62 @@ export class Context extends EventDispatcher {
     }
 
     private prepareInjector(): void {
-        let injectionsToInstantiate: Type[] = [];
-        this.moduleMetadata.forEach((moduleDescriptor: ModuleDescriptor) => {
+        const injectionsToInstantiate: Type[] = [];
+        this.moduleMetadata.forEach(moduleDescriptor => {
             if (!moduleDescriptor.mappings) {
                 return;
             }
-
-            for (let mapping of moduleDescriptor.mappings) {
-                injectionsToInstantiate.push(...this.prepareMapping(mapping));
-            }
+            moduleDescriptor.mappings.forEach(mapping => injectionsToInstantiate.push(...this.prepareMapping(mapping)));
         });
-        //Instantiate mappings that have been marked so
-        for (let instanceToInstantiate of injectionsToInstantiate) {
-            this.injector.get(instanceToInstantiate);
-        }
+        // Instantiate mappings that have been marked so
+        injectionsToInstantiate.forEach(instanceToInstantiate => this.injector.get(instanceToInstantiate));
     }
 
     private prepareMapping(mapping: ClassType | InjectionDescriptor): Type[] {
-        const injectionsToInstantiate: Type[] = [];
+        const {injector} = this;
 
-        //We have got a singular entry and such are to be mapped as singletons
-        if ("map" in mapping === false) {
-            const mappedType = mapping as Type;
-            if (this.injector.hasDirectMapping(mappedType)) {
-                this.injector.unMap(mappedType);
+        // We have got a singular entry and such are to be mapped as singletons
+        if (!("map" in mapping)) {
+            const mappedType = mapping as ClassType;
+            if (injector.hasDirectMapping(mappedType)) {
+                injector.unMap(mappedType);
             }
-            this.injector.map(<Type> mapping).asSingleton();
-        } else {
-            const injection = mapping as InjectionDescriptor;
-            if (typeof injection.map !== "function") {
-                throw new Error("Injection mapping doesn't seem to be a valid object type");
-            }
-
-            // Make it a singleton unless we're explicitly told not to
-            const mapAsSingleton = !('asSingleton' in injection) || injection.asSingleton;
-
-            const injectionMapping = this.injector.map(injection.map);
-            if (injection.useExisting) {
-                //if use existing is set create forward reference and ignore the rest
-                injectionMapping.toExisting(injection.useExisting);
-            } else if (injection.useValue) {
-                //Look for use value as next one
-                injectionMapping.toValue(injection.useValue);
-            } else if (injection.useType) {
-                if (mapAsSingleton) {
-                    injectionMapping.toSingleton(injection.useType as Type);
-                } else {
-                    injectionMapping.toType(injection.useType as Type);
-                }
-            } else if (mapAsSingleton) {
-                injectionMapping.asSingleton();
-            }
-
-            if (injection.instantiate && injectionsToInstantiate.indexOf(injection.map as Type) === -1) {
-                injectionsToInstantiate.push(injection.map as Type);
-            }
+            injector.map(mapping as ClassType).asSingleton();
+            return [];
         }
 
-        return injectionsToInstantiate;
+        const injectionsToInstantiate = new Set<Type>();
+        const injection = mapping as InjectionDescriptor;
+        if (typeof injection.map !== "function") {
+            throw new Error("Injection mapping doesn't seem to be a valid object type");
+        }
+
+        const injectionMapping = injector.map(injection.map);
+        if (injection.useExisting) {
+            injectionMapping.toExisting(injection.useExisting);
+        } else if (injection.useValue) {
+            injectionMapping.toValue(injection.useValue);
+        } else if (injection.useType) {
+            injectionMapping.toType(injection.useType as Type);
+        }
+
+        // Make it a singleton unless we're explicitly told not to
+        const mapAsSingleton = !('asSingleton' in injection) || injection.asSingleton;
+        if (mapAsSingleton && injectionMapping instanceof InjectedSingletonValueProvider) {
+            injectionMapping.asSingleton();
+        }
+
+        injectionsToInstantiate.add(injection.map as Type);
+
+        return [...injectionsToInstantiate];
     }
 
     private initializeModules(): void {
-        this.moduleMetadata.forEach((metadata: ModuleDescriptor, module: Type) => {
-            //Let us be using sealed modules for a start just as there is no reasonable scenario in which modules
-            //should be added and removed dynamically
+        this.moduleMetadata.forEach((metadata, module) => {
+            // Let us be using sealed modules for a start just as there is no reasonable scenario in which modules
+            // should be added and removed dynamically
             this.injector.map(module).asSingleton().seal();
-            //Instantiate!
+            // Instantiate!
             this.injector.get(module);
         });
     }
