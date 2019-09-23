@@ -1,49 +1,47 @@
 import "reflect-metadata";
+import {InjectionToken, Injector} from "../src";
 import {AbstractClass} from "./elements/AbstractClass";
 import {AbstractClassImpl} from "./elements/AbstractClassImpl";
-import {CustomModel2} from "./elements/CustomModel2";
-import {CustomModel} from "./elements/CustomModel";
+import {SimpleModel2} from "./elements/SimpleModel2";
+import {SimpleModel} from "./elements/SimpleModel";
 import {SuperClassWithInjections} from "./elements/SuperClassWithInjections";
-import {CustomModelWithInject} from "./elements/CustomModelWithInject";
-import {CustomExtendedModel} from "./elements/CustomExtendedModel";
-import {CustomModelWithPostConstruct} from "./elements/CustomModelWithPostConstruct";
-import {Injector} from "../src/injector/Injector";
-import {Injectable} from "../src/metadata/decorator/Injectable";
-import {metadata} from "../src/metadata/metadata";
+import {ClassWithInjectAndPreDestroy} from "./elements/ClassWithInjectAndPreDestroy";
+import {ClassWithInjectAndPreDestroySubClass} from "./elements/ClassWithInjectAndPreDestroySubClass";
+import {ClassWithPostConstruct} from "./elements/ClassWithPostConstruct";
 
 describe("Dependency injector configuration", () => {
 
     let injector: Injector;
     beforeEach(() => injector = new Injector());
 
-    it("injector.get(Injector) should return itself", () => {
+    it("Injector.get(Injector) should returns itself", () => {
         expect(injector.get(Injector)).toBe(injector);
     });
 
-    it("Accessing an unavailable type should cause an error", () => {
-        expect(() => injector.get(CustomModel)).toThrow(Error);
+    it("Accessing an unavailable type cause an error", () => {
+        expect(() => injector.get(SimpleModel)).toThrow(Error);
     });
 
     it("Class type can be mapped", () => {
-        injector.map(CustomModel);
-        const model = injector.get(CustomModel);
+        injector.map(SimpleModel);
+        const model = injector.get(SimpleModel);
         expect(model).not.toBeNull();
     });
 
     it("Class type mapping will return new instance on each request", () => {
-        injector.map(CustomModel);
-        const model1 = injector.get(CustomModel);
+        injector.map(SimpleModel);
+        const model1 = injector.get(SimpleModel);
         expect(model1).not.toBeNull();
-        const model2 = injector.get(CustomModel);
+        const model2 = injector.get(SimpleModel);
         expect(model2).not.toBeNull();
         expect(model2).not.toBe(model1);
     });
 
-    it("Class can be mapped as singleton", () => {
-        injector.map(CustomModel).asSingleton();
-        const model = injector.get(CustomModel);
-        expect(model).not.toBeNull();
-        expect(injector.get(CustomModel)).toBe(model);
+    it("Class mapping will respect asSingleton setting", () => {
+        injector.map(SimpleModel);
+        expect(injector.get(SimpleModel)).not.toBe(injector.get(SimpleModel));
+        injector.map(SimpleModel).asSingleton();
+        expect(injector.get(SimpleModel)).toBe(injector.get(SimpleModel));
     });
 
     it("Abstract class can be mapped to singleton implementation", () => {
@@ -52,9 +50,9 @@ describe("Dependency injector configuration", () => {
     });
 
     it("Class can be mapped to value", () => {
-        const model = new CustomModel();
-        injector.map(CustomModel).toValue(model);
-        expect(injector.get(CustomModel)).toBe(model);
+        const model = new SimpleModel();
+        injector.map(SimpleModel).toValue(model);
+        expect(injector.get(SimpleModel)).toBe(model);
     });
 
     it("Class can be mapped to existing mapping", () => {
@@ -65,65 +63,78 @@ describe("Dependency injector configuration", () => {
     });
 
     it("Class can be mapped to factory", () => {
-        injector.map(CustomModel);
         injector.map(AbstractClass).toFactory(() => new AbstractClassImpl());
         expect(injector.get(AbstractClass)).toBeInstanceOf(AbstractClassImpl);
     });
 
+    it("Factory mapping will respect asSingleton setting", () => {
+        injector.map(AbstractClass).toFactory(() => new AbstractClassImpl());
+        expect(injector.get(AbstractClass)).not.toBe(injector.get(AbstractClass));
+        injector.map(AbstractClass).toFactory(() => new AbstractClassImpl()).asSingleton();
+        expect(injector.get(AbstractClass)).toBe(injector.get(AbstractClass));
+    });
+
+    it("Value can be mapped to InjectionToken", () => {
+        const token = new InjectionToken<{ foo: number, bar: string, lee: number | string }>();
+        const value = {foo: 1, bar: 'string', lee: 'number'};
+        injector.map(token).toValue(value);
+        expect(injector.get(token)).toBe(value);
+    });
+
     it("Can create sub injector", () => {
         const subInjector = injector.createSubInjector();
-        subInjector.map(CustomModel2).asSingleton();
+        subInjector.map(SimpleModel2).asSingleton();
         expect(subInjector.parent).toBe(injector);
         expect(subInjector.get(Injector)).toBe(subInjector);
     });
 
     it("Missing sub injector mappings are served from parent injector", () => {
-        injector.map(CustomModel).asSingleton();
+        injector.map(SimpleModel).asSingleton();
         const subInjector = injector.createSubInjector();
-        expect(subInjector.get(CustomModel)).toBe(injector.get(CustomModel));
+        expect(subInjector.get(SimpleModel)).toBe(injector.get(SimpleModel));
     });
 
     it("Sub injector can de-define mappings from parent injector", () => {
-        injector.map(CustomModel).asSingleton();
+        injector.map(SimpleModel).asSingleton();
 
         const subInjector = injector.createSubInjector();
-        expect(subInjector.get(CustomModel).value).toBe(CustomModel.defaultValue);
+        expect(subInjector.get(SimpleModel).value).toBe(SimpleModel.defaultValue);
 
         const newValue = 0xFFFFFF;
-        subInjector.map(CustomModel).toValue(new CustomModel(newValue));
-        expect(subInjector.get(CustomModel).value).toBe(newValue);
+        subInjector.map(SimpleModel).toValue(new SimpleModel(newValue));
+        expect(subInjector.get(SimpleModel).value).toBe(newValue);
 
-        subInjector.unMap(CustomModel);
-        expect(subInjector.get(CustomModel).value).toBe(CustomModel.defaultValue);
+        subInjector.unMap(SimpleModel);
+        expect(subInjector.get(SimpleModel).value).toBe(SimpleModel.defaultValue);
     });
 
     it("Injector reports mapping state correctly", () => {
-        injector.map(CustomModel).asSingleton();
-        expect(injector.hasMapping(CustomModel)).toBe(true);
-        expect(injector.hasDirectMapping(CustomModel)).toBe(true);
+        injector.map(SimpleModel).asSingleton();
+        expect(injector.hasMapping(SimpleModel)).toBe(true);
+        expect(injector.hasDirectMapping(SimpleModel)).toBe(true);
 
         const subInjector = injector.createSubInjector();
-        expect(subInjector.hasMapping(CustomModel)).toBe(true);
-        expect(subInjector.hasDirectMapping(CustomModel)).toBe(false);
+        expect(subInjector.hasMapping(SimpleModel)).toBe(true);
+        expect(subInjector.hasDirectMapping(SimpleModel)).toBe(false);
     });
 
     it("Injector mapping can be unmapped", () => {
-        injector.map(CustomModel).asSingleton();
+        injector.map(SimpleModel).asSingleton();
 
-        expect(injector.hasMapping(CustomModel)).toBe(true);
-        injector.unMap(CustomModel);
-        expect(injector.hasMapping(CustomModel)).toBe(false);
-        expect(() => injector.get(CustomModel)).toThrow(Error);
+        expect(injector.hasMapping(SimpleModel)).toBe(true);
+        injector.unMap(SimpleModel);
+        expect(injector.hasMapping(SimpleModel)).toBe(false);
+        expect(() => injector.get(SimpleModel)).toThrow(Error);
     });
 
     it("Sealed mappings cannot be changed", () => {
-        const mapping = injector.map(CustomModel);
+        const mapping = injector.map(SimpleModel);
         mapping.seal();
         expect(() => mapping.asSingleton()).toThrow(Error);
     });
 
     it("Mapping can be unsealed", () => {
-        const mapping = injector.map(CustomModel);
+        const mapping = injector.map(SimpleModel);
 
         expect(() => mapping.unseal(null)).toThrow(Error);
         const sealKey = mapping.seal();
@@ -133,12 +144,12 @@ describe("Dependency injector configuration", () => {
     });
 
     it("Unsealed injector mapping can be altered", () => {
-        const mapping = injector.map(CustomModel2).asSingleton();
-        expect(() => mapping.toValue(new CustomModel())).not.toThrow(Error);
+        const mapping = injector.map(SimpleModel2).asSingleton();
+        expect(() => mapping.toValue(new SimpleModel())).not.toThrow(Error);
     });
 
     it("Mapping can be destroyed", () => {
-        const mapping = injector.map(CustomModel);
+        const mapping = injector.map(SimpleModel);
         expect(() => mapping.destroy()).not.toThrow(Error);
         expect(() => mapping.destroy()).toThrow(Error);
         expect(() => mapping.asSingleton()).toThrow(Error);
@@ -146,18 +157,17 @@ describe("Dependency injector configuration", () => {
     });
 
     it("Destroy of injected instance will make all PreDestroy methods invoked", () => {
-
-        injector.map(CustomModelWithInject).asSingleton();
-        const instance = injector.get(CustomModelWithInject);
+        injector.map(ClassWithInjectAndPreDestroy).asSingleton();
+        const instance = injector.get(ClassWithInjectAndPreDestroy);
 
         const callback = jest.fn();
-        CustomModelWithInject.onDestroy = callback;
+        ClassWithInjectAndPreDestroy.onDestroy = callback;
         injector.destroyInstance(instance);
         expect(callback).toBeCalled();
     });
 
     it("Destroy of injector will  render injector useless", () => {
-        injector.map(CustomModelWithInject).asSingleton();
+        injector.map(ClassWithInjectAndPreDestroy).asSingleton();
         injector.destroy();
 
         [
@@ -187,40 +197,40 @@ describe("Apply injections", () => {
     beforeEach(() => injector = new Injector());
 
     it("Can instantiate instance", () => {
-        const model = injector.instantiateInstance(CustomModel);
+        const model = injector.instantiateInstance(SimpleModel);
         expect(model).not.toBeNull();
-        expect(model).toBeInstanceOf(CustomModel);
+        expect(model).toBeInstanceOf(SimpleModel);
     });
 
     it("Unresolvable injectable properties will lead to error", () => {
         expect(() => injector.injectInto(new SuperClassWithInjections())).toThrow(Error);
-        injector.map(CustomModel2);
+        injector.map(SimpleModel2);
         expect(() => injector.injectInto(new SuperClassWithInjections())).not.toThrow(Error);
     });
 
     it("Property injections work", () => {
-        const model = injector.instantiateInstance(CustomModelWithInject);
+        const model = injector.instantiateInstance(ClassWithInjectAndPreDestroy);
         expect(model.injector).toBe(injector);
 
-        const extendedModel = injector.instantiateInstance(CustomExtendedModel);
+        const extendedModel = injector.instantiateInstance(ClassWithInjectAndPreDestroySubClass);
         expect(extendedModel.injector).toBe(injector);
     });
 
     it("Instance must be available in Injector as @PostConstruct is invoked", done => {
-        injector.map(CustomModelWithPostConstruct).asSingleton();
+        injector.map(ClassWithPostConstruct).asSingleton();
 
-        let instance: CustomModelWithPostConstruct;
+        let instance: ClassWithPostConstruct;
 
-        CustomModelWithPostConstruct.onPostConstruct = () => {
-            expect(injector.get(CustomModelWithPostConstruct)).toBe(instance);
+        ClassWithPostConstruct.onPostConstruct = () => {
+            expect(injector.get(ClassWithPostConstruct)).toBe(instance);
             done();
         };
-        instance = injector.get(CustomModelWithPostConstruct);
+        instance = injector.get(ClassWithPostConstruct);
     });
 
     it("Pre destroy handlers are invoked on instance destroy", () => new Promise<void>(resolve => {
-        const model = injector.instantiateInstance(CustomModelWithInject);
-        CustomModelWithInject.onDestroy = resolve;
+        const model = injector.instantiateInstance(ClassWithInjectAndPreDestroy);
+        ClassWithInjectAndPreDestroy.onDestroy = resolve;
         injector.destroyInstance(model);
     }));
 

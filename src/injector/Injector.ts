@@ -5,6 +5,7 @@ import {MappingEvent} from "./event/MappingEvent";
 import {metadata} from "../metadata/metadata";
 import {typeReferenceToString} from "../util/StringUtil";
 import {PropertyInjection} from "../metadata/data/PropertyInjection";
+import {InjectionToken} from "./data/InjectionToken";
 
 /**
  * Dependency provider implementation class
@@ -15,7 +16,7 @@ export class Injector extends EventDispatcher {
 
     private _destroyed: boolean = false;
 
-    private mappings = new Map<ClassType, InjectionMapping>();
+    private mappings = new Map<ClassType | InjectionToken, InjectionMapping>();
 
     constructor(readonly parent: Injector = null) {
         super();
@@ -39,12 +40,12 @@ export class Injector extends EventDispatcher {
 
     /**
      * Create injector mapping.
-     * @param {ClassType} type The class type describing the mapping
+     * @param type The class type describing the mapping
      * @returns {InjectionMapping}
      * @throws Error in case if method is invoked on destroyed instance
      * @throws Error in case if attempt to override sealed mapping is encountered
      */
-    map(type: ClassType): InjectionMapping {
+    map<T>(type: ClassType<T> | InjectionToken<T>): InjectionMapping<T> {
         this.throwErrorIfDestroyed();
 
         if (this.hasDirectMapping(type)) {
@@ -56,9 +57,10 @@ export class Injector extends EventDispatcher {
             this.unMap(type);
         }
 
-        const mapping = new InjectionMapping(type, this, this.MASTER_SEAL_KEY);
+        const mapping = new InjectionMapping<T>(type, this, this.MASTER_SEAL_KEY);
         this.mappings.set(type, mapping);
         this.dispatchEvent(new MappingEvent(MappingEvent.MAPPING_CREATED, type, mapping));
+
         return mapping;
     }
 
@@ -69,7 +71,7 @@ export class Injector extends EventDispatcher {
      * @throws Error if unknown mapping is attempted to be unmapped
      * @throws Error if sealed mapping is attempted to be unmapped
      */
-    unMap(type: ClassType): void {
+    unMap(type: ClassType | InjectionToken): void {
         this.throwErrorIfDestroyed();
 
         if (!this.hasDirectMapping(type)) {
@@ -96,7 +98,7 @@ export class Injector extends EventDispatcher {
      * @return True if the mapping exists
      * @throws Error in case if method i invoked on destroyed instance
      */
-    hasDirectMapping(type: ClassType): boolean {
+    hasDirectMapping(type: ClassType | InjectionToken): boolean {
         this.throwErrorIfDestroyed();
 
         return this.mappings.has(type);
@@ -108,7 +110,7 @@ export class Injector extends EventDispatcher {
      * @return True if the mapping exists
      * @throws Error in case if method is invoked on destroyed instance
      */
-    hasMapping(type: ClassType): boolean {
+    hasMapping(type: ClassType | InjectionToken): boolean {
         this.throwErrorIfDestroyed();
 
         let injector: Injector = this;
@@ -133,7 +135,7 @@ export class Injector extends EventDispatcher {
      * @throws Error in case if method i invoked on destroyed instance
      * @throws Error when no mapping was found for the specified dependency
      */
-    getMapping(type: ClassType): InjectionMapping {
+    getMapping<T>(type: ClassType<T> | InjectionToken<T>): InjectionMapping<T> {
         this.throwErrorIfDestroyed();
 
         if (!this.hasDirectMapping(type)) {
@@ -149,7 +151,7 @@ export class Injector extends EventDispatcher {
      * @throws Error in case if method is invoked on destroyed instance
      * @throws Error when no mapping was found for the specified dependency
      */
-    get<T>(type: ClassType<T>): T {
+    get<T>(type: ClassType<T> | InjectionToken<T>): T {
         this.throwErrorIfDestroyed();
 
         if (!this.hasMapping(type)) {

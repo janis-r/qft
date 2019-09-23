@@ -21,6 +21,7 @@ export * from "./eventDispatcher/event/Event";
 export * from "./eventDispatcher/EventDispatcher";
 
 export * from "./injector/data/InjectionMapping";
+export * from "./injector/data/InjectionToken";
 export * from "./injector/event/MappingEvent";
 export * from "./injector/Injector";
 

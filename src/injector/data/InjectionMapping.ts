@@ -12,7 +12,7 @@ import {InjectedSingletonValueProvider} from "../provider/InjectedSingletonValue
 /**
  * Injector data mapping instance.
  */
-export class InjectionMapping {
+export class InjectionMapping<T = any> {
 
     private _sealed: boolean = false;
     private _destroyed: boolean = false;
@@ -27,7 +27,7 @@ export class InjectionMapping {
      * @param injector Injector instance
      * @param masterSealKey Master seal key
      */
-    constructor(readonly type: ClassType, readonly injector: Injector, private readonly masterSealKey: Object) {
+    constructor(readonly type: ClassType<T>, readonly injector: Injector, private readonly masterSealKey: Object) {
         this.defaultProviderSet = true;
         // Set class provider as a default value provider, so if no more configuration is set, this will stay as default behavior
         this.setProvider(new ClassProvider(injector, type as Type));
@@ -69,7 +69,7 @@ export class InjectionMapping {
      * @param type Type that should be used as source of singleton instance
      * @returns {InjectionMapping} The InjectionMapping the method is invoked on
      */
-    toSingleton(type: Type): this {
+    toSingleton(type: Type<T>): this {
         if (this._sealed || this._destroyed) {
             throw new Error(`Can't change a sealed or destroyed mapping.`);
         }
@@ -85,7 +85,7 @@ export class InjectionMapping {
      * @param type Type that should be used as new injected value is spawned
      * @returns {InjectionMapping} The InjectionMapping the method is invoked on
      */
-    toType(type: Type): this {
+    toType(type: Type<T>): this {
         if (this._sealed || this._destroyed) {
             throw new Error(`Can't change a sealed or destroyed mapping.`);
         }
@@ -97,7 +97,7 @@ export class InjectionMapping {
      * Makes the mapping return the given value for each consecutive request.
      * @param value Hard coded value to be returned for each request
      */
-    toValue(value: any): this {
+    toValue(value: T): this {
         if (this._sealed || this._destroyed) {
             throw new Error(`Can't change a sealed or destroyed mapping.`);
         }
@@ -109,7 +109,7 @@ export class InjectionMapping {
      * Makes the mapping return existing mapping from current injector or any of its parents upon each request
      * @param type Existing mapping type to use as for a return value.
      */
-    toExisting(type: ClassType): this {
+    toExisting(type: ClassType<T>): this {
         if (this._sealed || this._destroyed) {
             throw new Error(`Can't change a sealed or destroyed mapping.`);
         }
@@ -122,7 +122,7 @@ export class InjectionMapping {
      *
      * @param factory
      */
-    toFactory(factory: ProviderValueFactory) {
+    toFactory(factory: ProviderValueFactory<T>) {
         if (this._sealed || this._destroyed) {
             throw new Error(`Can't change a sealed or destroyed mapping.`);
         }

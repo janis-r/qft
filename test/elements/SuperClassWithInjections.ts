@@ -1,9 +1,9 @@
-import {Inject} from "../../src/metadata/decorator/Inject";
-import {CustomModel2} from "./CustomModel2";
+import {Inject} from "../../src";
+import {SimpleModel2} from "./SimpleModel2";
 
 export class SuperClassWithInjections {
 
     @Inject()
-    customModel2: CustomModel2;
+    customModel2: SimpleModel2;
 
 }

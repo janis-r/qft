@@ -1,5 +1,6 @@
 export abstract class AbstractClass {
-    public variable = Math.random();
 
+    variable = Math.random();
     abstract method(): void;
+
 }

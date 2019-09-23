@@ -1,11 +1,9 @@
 import "reflect-metadata";
-import {CommandMap} from "../src/commandMap/CommandMap";
-import {Injector} from "../src/injector/Injector";
-import {Event} from "../src/eventDispatcher/event/Event";
-import {CustomCommand} from "./elements/CustomCommand";
+import {CommandMap, Event, Injector} from "../src";
 import {CommandMappingImpl} from "../src/commandMap/data/impl/CommandMappingImpl";
-import {CustomCommand2} from "./elements/CustomCommand2";
-import {CustomMacroCommand} from "./elements/CustomMacroCommand";
+import {SimpleCommand} from "./elements/SimpleCommand";
+import {SimpleCommand2} from "./elements/SimpleCommand2";
+import {MacroCommandClass} from "./elements/MacroCommandClass";
 
 describe("Command map", () => {
 
@@ -15,8 +13,8 @@ describe("Command map", () => {
     beforeEach(() => commandMap = injector.instantiateInstance(CommandMap));
     afterEach(() => {
         // Clear custom command static callbacks
-        CustomCommand.done = null;
-        CustomCommand2.done = null;
+        SimpleCommand.done = null;
+        SimpleCommand2.done = null;
     });
 
     it("Can initialize", () => {
@@ -36,9 +34,9 @@ describe("Command map", () => {
         const eventName = "test";
 
         const callback = jest.fn();
-        CustomCommand.done = callback;
+        SimpleCommand.done = callback;
 
-        const {eventClass} = commandMap.map(eventName, CustomCommand) as CommandMappingImpl;
+        const {eventClass} = commandMap.map(eventName, SimpleCommand) as CommandMappingImpl;
         expect(eventClass).toBe(Event);
         expect(commandMap.mappingCount).toBe(1);
 
@@ -50,9 +48,9 @@ describe("Command map", () => {
         const eventName = "test";
         let executeCount = 0;
 
-        CustomCommand.done = () => executeCount++;
+        SimpleCommand.done = () => executeCount++;
 
-        commandMap.map(eventName, CustomCommand).once();
+        commandMap.map(eventName, SimpleCommand).once();
         commandMap.trigger(eventName);
         expect(executeCount).toBe(1);
         expect(commandMap.mappingCount).toBe(0);
@@ -62,8 +60,8 @@ describe("Command map", () => {
 
     it("Map command twice", () => {
         const eventName = "test";
-        expect(commandMap.map(eventName, CustomCommand)).not.toBe(null);
-        expect(commandMap.map(eventName, CustomCommand)).toBe(null);
+        expect(commandMap.map(eventName, SimpleCommand)).not.toBe(null);
+        expect(commandMap.map(eventName, SimpleCommand)).toBe(null);
     });
 
     it("Map command to two events", () => {
@@ -71,9 +69,9 @@ describe("Command map", () => {
         const eventName2 = "test2";
 
         let executeCount = 0;
-        CustomCommand.done = () => executeCount++;
-        commandMap.map(eventName, CustomCommand);
-        commandMap.map(eventName2, CustomCommand);
+        SimpleCommand.done = () => executeCount++;
+        commandMap.map(eventName, SimpleCommand);
+        commandMap.map(eventName2, SimpleCommand);
         commandMap.trigger(eventName2);
         commandMap.trigger(eventName);
         expect(executeCount).toBe(2);
@@ -82,8 +80,8 @@ describe("Command map", () => {
     it("Map command with successful guard", () => {
         const eventName = "test";
         const callback = jest.fn();
-        CustomCommand.done = callback;
-        commandMap.map(eventName, CustomCommand).withGuards(() => true);
+        SimpleCommand.done = callback;
+        commandMap.map(eventName, SimpleCommand).withGuards(() => true);
         commandMap.trigger(eventName);
         expect(callback).toBeCalled();
     });
@@ -91,8 +89,8 @@ describe("Command map", () => {
     it("Map command with unsuccessful guard", () => {
         const eventName = "test";
         const callback = jest.fn();
-        CustomCommand.done = callback;
-        commandMap.map(eventName, CustomCommand).withGuards(() => false);
+        SimpleCommand.done = callback;
+        commandMap.map(eventName, SimpleCommand).withGuards(() => false);
         commandMap.trigger(eventName);
         expect(callback).not.toBeCalled();
     });
@@ -100,9 +98,9 @@ describe("Command map", () => {
     it("unMap command", () => {
         const eventName = "test";
         const callback = jest.fn();
-        CustomCommand.done = callback;
-        commandMap.map(eventName, CustomCommand);
-        commandMap.unMap(eventName, CustomCommand);
+        SimpleCommand.done = callback;
+        commandMap.map(eventName, SimpleCommand);
+        commandMap.unMap(eventName, SimpleCommand);
         expect(commandMap.mappingCount).toBe(0);
         commandMap.trigger(eventName);
         expect(callback).not.toBeCalled();
@@ -112,40 +110,40 @@ describe("Command map", () => {
         const eventName = "test";
         const eventName2 = "test2";
 
-        commandMap.map(eventName, CustomCommand);
-        commandMap.map(eventName2, CustomCommand);
+        commandMap.map(eventName, SimpleCommand);
+        commandMap.map(eventName2, SimpleCommand);
 
-        expect(commandMap.unMap(eventName, CustomCommand)).toBe(true);
-        expect(commandMap.unMap(eventName, CustomCommand)).toBe(false);
+        expect(commandMap.unMap(eventName, SimpleCommand)).toBe(true);
+        expect(commandMap.unMap(eventName, SimpleCommand)).toBe(false);
     });
 
     it("unMap command from two different events", () => {
         const eventName = "test";
         const eventName2 = "test2";
 
-        commandMap.map(eventName, CustomCommand);
-        commandMap.map(eventName2, CustomCommand);
+        commandMap.map(eventName, SimpleCommand);
+        commandMap.map(eventName2, SimpleCommand);
 
-        expect(commandMap.unMap(eventName, CustomCommand)).toBe(true);
-        expect(commandMap.unMap(eventName2, CustomCommand)).toBe(true);
+        expect(commandMap.unMap(eventName, SimpleCommand)).toBe(true);
+        expect(commandMap.unMap(eventName2, SimpleCommand)).toBe(true);
     });
 
     it("unMap command from wrong event", () => {
         const eventName = "test";
         const eventName2 = "test2";
 
-        commandMap.map(eventName2, CustomCommand2);
-        commandMap.map(eventName, CustomCommand);
+        commandMap.map(eventName2, SimpleCommand2);
+        commandMap.map(eventName, SimpleCommand);
 
-        expect(commandMap.unMap(eventName2, CustomCommand)).toBe(false);
+        expect(commandMap.unMap(eventName2, SimpleCommand)).toBe(false);
     });
 
     it("unMap all commands from event", () => {
         const eventName = "test";
         const callback = jest.fn();
-        CustomCommand.done = callback;
-        commandMap.map(eventName, CustomCommand);
-        commandMap.map(eventName, CustomCommand2);
+        SimpleCommand.done = callback;
+        commandMap.map(eventName, SimpleCommand);
+        commandMap.map(eventName, SimpleCommand2);
         commandMap.unMap(eventName);
         expect(commandMap.mappingCount).toBe(0);
         commandMap.trigger(eventName);
@@ -156,11 +154,11 @@ describe("Command map", () => {
         const eventName = "firstEvent";
         const eventName2 = "secondEvent";
         const callback = jest.fn();
-        CustomCommand.done = callback;
-        commandMap.map(eventName, CustomCommand);
-        commandMap.map(eventName2, CustomCommand);
-        commandMap.map(eventName, CustomCommand2);
-        commandMap.map(eventName2, CustomCommand2);
+        SimpleCommand.done = callback;
+        commandMap.map(eventName, SimpleCommand);
+        commandMap.map(eventName2, SimpleCommand);
+        commandMap.map(eventName, SimpleCommand2);
+        commandMap.map(eventName2, SimpleCommand2);
         commandMap.unMap();
         expect(commandMap.mappingCount).toBe(0);
         commandMap.trigger(eventName);
@@ -171,7 +169,7 @@ describe("Command map", () => {
         const eventName = "test";
         const invalidValues = [undefined, null, ""];
         invalidValues.forEach(value => {
-            expect(() => commandMap.map(value, CustomCommand)).toThrow(Error);
+            expect(() => commandMap.map(value, SimpleCommand)).toThrow(Error);
             expect(() => commandMap.map(eventName, null)).toThrow(Error);
         });
     });
@@ -184,8 +182,8 @@ describe("Command map", () => {
     it("Macro command execute", async () => {
         const eventName = "test";
         const callback = jest.fn();
-        CustomMacroCommand.done = callback;
-        commandMap.map(eventName, CustomMacroCommand);
+        MacroCommandClass.done = callback;
+        commandMap.map(eventName, MacroCommandClass);
         commandMap.trigger(eventName);
         await new Promise(resolve => setTimeout(resolve, 1000));
         expect(callback).toBeCalled();

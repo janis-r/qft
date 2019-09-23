@@ -1,6 +1,7 @@
 import {Event} from "../../eventDispatcher/event/Event";
 import {InjectionMapping} from "../data/InjectionMapping";
 import {ClassType} from "../../type";
+import {InjectionToken} from "../data/InjectionToken";
 
 export class MappingEvent extends Event {
 
@@ -26,7 +27,7 @@ export class MappingEvent extends Event {
      */
     static readonly MAPPING_DESTROYED = 'mappingDestroyed';
 
-    constructor(type: string, readonly mappedType: ClassType, readonly mapping: InjectionMapping) {
+    constructor(type: string, readonly mappedType: ClassType | InjectionToken, readonly mapping: InjectionMapping<any>) {
         super(type);
     }
 

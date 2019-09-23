@@ -1,5 +1,5 @@
 {
-  "name": "quiver-framework",
+  "name": "qft",
   "description": "Lightweight micro framework for TypeScript/JavaScript",
   "version": "0.7.5",
   "scripts": {

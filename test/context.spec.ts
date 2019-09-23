@@ -1,10 +1,7 @@
 import "reflect-metadata";
-import {Context} from "../src/context/Context";
-import {WebApplicationBundle} from "../src/context/bundle/WebApplicationBundle";
-import {CustomModuleWithMetatags} from "./elements/CustomModuleWithMetatags";
-import {ContextModuleEvent} from "../src/context/event/ContextModuleEvent";
-import {CustomCommand} from "./elements/CustomCommand";
-import {EventDispatcher} from "../src/eventDispatcher/EventDispatcher";
+import {Context, ContextModuleEvent, EventDispatcher, WebApplicationBundle} from "../src";
+import {ModuleWithMetatags} from "./elements/ModuleWithMetatags";
+import {SimpleCommand} from "./elements/SimpleCommand";
 
 describe("Event dispatcher", () => {
 
@@ -51,9 +48,9 @@ describe("Event dispatcher", () => {
 
     it("Configure", done => {
         context.install(...WebApplicationBundle);
-        context.configure(CustomModuleWithMetatags);
+        context.configure(ModuleWithMetatags);
         const checkRegisteredModule = (event: ContextModuleEvent) => {
-            if (event.moduleType === CustomModuleWithMetatags) {
+            if (event.moduleType === ModuleWithMetatags) {
                 done();
             }
         };
@@ -63,9 +60,9 @@ describe("Event dispatcher", () => {
 
     it("CommandMapExtension", done => {
         context.install(...WebApplicationBundle);
-        context.configure(CustomModuleWithMetatags);
+        context.configure(ModuleWithMetatags);
         context.initialize();
-        CustomCommand.done = done;
+        SimpleCommand.done = done;
         const dispatcher = context.injector.get(EventDispatcher);
         dispatcher.dispatchEvent("Test");
     });

@@ -1,9 +1,6 @@
 import "reflect-metadata";
-import {EventDispatcher} from "../src/eventDispatcher/EventDispatcher";
-import {EventListener} from "../src/eventDispatcher/api/EventListener";
-import {EventGuard} from "../src/eventDispatcher/api/EventGuard";
-import {Event} from "../src/eventDispatcher/event/Event";
-import {CustomEvent} from "./elements/CustomEvent";
+import {Event, EventDispatcher, EventGuard, EventListener} from "../src";
+import {SimpleEvent} from "./elements/SimpleEvent";
 
 describe("Event dispatcher", () => {
 
@@ -55,8 +52,8 @@ describe("Event dispatcher", () => {
 
     it("Add listener with guards", () => {
         const eventName = "test";
-        const callback: EventListener = (event: CustomEvent) => expect(event.data.pass).toBe(true);
-        const guard: EventGuard = (event: CustomEvent) => event.data.pass;
+        const callback: EventListener = (event: SimpleEvent) => expect(event.data.pass).toBe(true);
+        const guard: EventGuard = (event: SimpleEvent) => event.data.pass;
         eventDispatcher.addEventListener(eventName, callback).withGuards(guard);
         eventDispatcher.dispatchEvent(eventName, {pass: true});
         eventDispatcher.dispatchEvent(eventName, {pass: false});
@@ -128,7 +125,7 @@ describe("Event dispatcher", () => {
 
     it("Custom event dispatch", () => {
         const data = {pass: true};
-        const event = new CustomEvent("test", data);
+        const event = new SimpleEvent("test", data);
         const callback: EventListener = (receivedEvent) => {
             if (receivedEvent !== event || receivedEvent.type !== event.type || receivedEvent.data !== data) {
                 throw new Error("Data received on event callback does not match dispatched data");

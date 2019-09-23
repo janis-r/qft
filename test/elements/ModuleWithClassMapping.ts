@@ -1,12 +1,12 @@
-import {CustomModel} from "./CustomModel";
-import {Module} from "../../src/metadata/decorator/Module";
-import {CustomInjectedClass} from "./CustomInjectedClass";
+import {Module} from "../../src";
+import {SimpleModel} from "./SimpleModel";
+import {InjectedClass} from "./InjectedClass";
 
 @Module({
     mappings: [
-        CustomInjectedClass,
+        InjectedClass,
         {
-            map: CustomModel,
+            map: SimpleModel,
             asSingleton: false
         }
     ]
