@@ -8,6 +8,8 @@ import {SuperClassWithInjections} from "./elements/SuperClassWithInjections";
 import {ClassWithInjectAndPreDestroy} from "./elements/ClassWithInjectAndPreDestroy";
 import {ClassWithInjectAndPreDestroySubClass} from "./elements/ClassWithInjectAndPreDestroySubClass";
 import {ClassWithPostConstruct} from "./elements/ClassWithPostConstruct";
+import {ClassWithInjectedToken} from "./elements/ClassWithInjectedToken";
+import {token} from "./elements/injection-token";
 
 describe("Dependency injector configuration", () => {
 
@@ -79,6 +81,15 @@ describe("Dependency injector configuration", () => {
         const value = {foo: 1, bar: 'string', lee: 'number'};
         injector.map(token).toValue(value);
         expect(injector.get(token)).toBe(value);
+    });
+
+    it("Value can be mapped to InjectionToken 2", () => {
+        const injectedValue = {bar: 1, foo: '1', lee: 'number'};
+        injector.map(token).toValue(injectedValue);
+        injector.map(ClassWithInjectedToken);
+
+        expect(injector.get(ClassWithInjectedToken).property).not.toBeNull();
+        expect(injector.get(ClassWithInjectedToken).property).toBe(injectedValue);
     });
 
     it("Can create sub injector", () => {
