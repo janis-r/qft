@@ -1,10 +1,16 @@
 {
   "name": "qft",
   "description": "Lightweight micro framework for TypeScript/JavaScript",
-  "version": "0.7.5",
+  "version": "0.0.1",
+  "main": "index.js",
+  "module": ".esnext/index.js",
   "scripts": {
-    "start": "serve",
-    "test": "jest --colors --runInBand"
+    "test": "jest --colors --runInBand",
+    "transpile": "tsc && tsc -p . --outDir dist/.esnext --module es2015 --target esnext",
+    "prepare-build": "rimraf dist && npm run transpile && copyfiles README.md dist",
+    "publish-patch": "npm run prepare-build && npm version patch && ts-node export-package && npm publish dist",
+    "publish-minor": "npm run prepare-build && npm version minor && ts-node export-package && npm publish dist",
+    "publish-major": "npm run prepare-build && npm version major && ts-node export-package && npm publish dist"
   },
   "license": "MIT",
   "contributors": [
@@ -25,10 +31,11 @@
   "devDependencies": {
     "@types/jest": "^24.0.18",
     "@types/node": "^12.7.5",
+    "copyfiles": "^2.1.1",
     "jest": "^24.9.0",
+    "rimraf": "^3.0.0",
     "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
-    "tslint": "^5.19.0",
     "typescript": "^3.6.2"
   }
 }

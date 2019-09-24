@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es5",
     "module": "commonjs",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -13,17 +13,13 @@
     "lib": [
       "es2015",
       "dom"
-    ]
+    ],
+    "downlevelIteration": true
   },
-  "files": [
-    "./index.ts"
-  ],
   "include": [
-    "./src/**/*",
-    "./node_modules/reflect-metadata/reflect-metadata.d.ts"
+    "./src"
   ],
   "exclude": [
-    "./test",
-    "./src/Main.ts"
+    "./test"
   ]
 }

@@ -6,15 +6,15 @@ import {ClassType, Type} from "../../type";
  * error.
  */
 export function Optional(): Function {
-    return (target: ClassType, key: string, index: number | Object): ClassType => {
-        if (key && !index) {
+    return (target: ClassType, variable: string, index: number | Object): ClassType => {
+        if (variable && !index) {
             // We have a class property mapping in here
-            metadataInternal.getTypeDescriptor(<Type>target.constructor).setOptionalPropertyInjection(key);
-        } else if (!key && typeof index === "number") {
+            metadataInternal.getTypeDescriptor(<Type>target.constructor).setOptionalPropertyInjection(variable);
+        } else if (!variable && typeof index === "number") {
             //This one is a constructor param entry
             metadataInternal.getTypeDescriptor(target).setOptionalConstructorArgument(index);
         } else {
-            console.warn(`@Optional meta tag is applied to non constructor argument or class property named "${key}" and will make no effect`);
+            console.warn(`@Optional meta tag is applied to non constructor argument or class property named "${variable}" and will make no effect`);
         }
 
         return target;

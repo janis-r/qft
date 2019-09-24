@@ -14,15 +14,15 @@ export abstract class EventMapping {
 
     /**
      * Mark event mapping to be executed only once.
-     * @returns {EventMappingImpl} so we can call other methods of this class instantly from return value
+     * @returns {this} so we can call other methods of this class instantly from return value
      */
-    abstract once(): EventMapping;
+    abstract once(): this;
 
     /**
      * Set event guards which could prevent event listener to be executed upon some circumstances known only to
      * guards themselves.
      * @param guards List of EventGuard callback methods that might prevent execution of listener.
-     * @returns {EventMappingImpl} so we can call other methods of this class instantly from return value
+     * @returns {this} so we can call other methods of this class instantly from return value
      */
-    abstract withGuards(...guards: EventGuard[]): EventMapping;
+    abstract withGuards(...guards: EventGuard[]): this;
 }
