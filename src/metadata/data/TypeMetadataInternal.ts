@@ -1,6 +1,7 @@
-import {ClassType, Type} from "../../type";
+import {ClassType} from "../../type";
 import {ModuleDescriptor} from "./ModuleDescriptor";
-import {typeReferenceToString} from "../../util/StringUtil";
+import {referenceToString} from "../../util/StringUtil";
+import {InjectionToken} from "../..";
 
 /**
  * Data object which holds raw information collected for particular Type from class metadataInternal decorators.
@@ -10,7 +11,7 @@ export class TypeMetadataInternal {
 
     private _constructorArguments: ClassType[];
     private _optionalConstructorArguments = new Set<number>();
-    private _propertyInjections = new Map<string, ClassType>();
+    private _propertyInjections = new Map<string, ClassType | InjectionToken>();
     private _optionalPropertyInjections = new Set<string>();
     private _postConstructMethods = new Set<string>();
     private _preDestroyMethods = new Set<string>();
@@ -43,7 +44,7 @@ export class TypeMetadataInternal {
      * List of type property name and data type pairs that should be filled with values from Injector as instance
      * of this type is created.
      */
-    get propertyInjections(): ReadonlyMap<string, ClassType> {
+    get propertyInjections(): ReadonlyMap<string, ClassType | InjectionToken> {
         return this._propertyInjections;
     }
 
@@ -90,9 +91,9 @@ export class TypeMetadataInternal {
         this._optionalConstructorArguments.add(index);
     }
 
-    addPropertyInjection(name: string, type: ClassType): void {
+    addPropertyInjection(name: string, type: ClassType | InjectionToken): void {
         if (this._propertyInjections.has(name)) {
-            throw new Error(`Double set of property ${name} injection to ${typeReferenceToString(type)}`);
+            throw new Error(`Double set of property ${name} injection to ${referenceToString(type)}`);
         }
         this._propertyInjections.set(name, type);
     }
@@ -106,14 +107,14 @@ export class TypeMetadataInternal {
 
     addPostConstructMethod(name: string): void {
         if (this._postConstructMethods.has(name)) {
-            throw new Error(`Double register of post construct method ${name} to ${typeReferenceToString(this.type)}`);
+            throw new Error(`Double register of post construct method ${name} to ${referenceToString(this.type)}`);
         }
         this._postConstructMethods.add(name);
     }
 
     addPreDestroyMethod(name: string): void {
         if (this._preDestroyMethods.has(name)) {
-            throw new Error(`Double register of pre destroy method ${name} to ${typeReferenceToString(this.type)}`);
+            throw new Error(`Double register of pre destroy method ${name} to ${referenceToString(this.type)}`);
         }
         this._preDestroyMethods.add(name);
     }

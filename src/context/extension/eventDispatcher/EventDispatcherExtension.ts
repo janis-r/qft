@@ -2,6 +2,7 @@ import {ContextExtension} from "../../data/ContextExtension";
 import {Context} from "../../Context";
 import {EventDispatcher} from "../../../eventDispatcher/EventDispatcher";
 import {ContextLifecycleEvent} from "../../event/ContextLifecycleEvent";
+
 /**
  * Event dispatcher extension which adds EventDispatcher singleton to Context scope.
  */

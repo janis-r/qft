@@ -4,7 +4,7 @@ import {InjectedValueProvider} from "../provider/InjectedValueProvider";
 import {ClassProvider} from "../provider/providers/ClassProvider";
 import {ValueProvider} from "../provider/providers/ValueProvider";
 import {ExistingMappingProvider} from "../provider/providers/ExistingMappingProvider";
-import {typeReferenceToString} from "../../util/StringUtil";
+import {referenceToString} from "../../util/StringUtil";
 import {ProviderValueFactory} from "./ProviderValueFactory";
 import {FactoryProvider} from "../provider/providers/FactoryProvider";
 import {InjectedSingletonValueProvider} from "../provider/InjectedSingletonValueProvider";
@@ -201,7 +201,7 @@ export class InjectionMapping<T = any> {
         if (!this.defaultProviderSet && this.provider) {
             // console.log("provider", this.provider);
             console.warn(
-                `Injector already has mapping for ${typeReferenceToString(this.type)} and its being overridden. ` +
+                `Injector already has mapping for ${referenceToString(this.type)} and its being overridden. ` +
                 `This could be or could not be error, buy it's suggested to use injector.unMap() ` +
                 `before new mapping is set.`
             );

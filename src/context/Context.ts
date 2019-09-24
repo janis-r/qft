@@ -3,10 +3,10 @@ import {Injector} from "../injector/Injector";
 import {ClassType, Type} from "../type";
 import {ContextExtension} from "./data/ContextExtension";
 import {ContextLifecycleEvent} from "./event/ContextLifecycleEvent";
-import {ModuleDescriptor} from "../metadata/data/ModuleDescriptor";
+import {isModuleDescriptor, ModuleDescriptor} from "../metadata/data/ModuleDescriptor";
 import {metadata} from "../metadata/metadata";
 import {ContextModuleEvent} from "./event/ContextModuleEvent";
-import {typeReferenceToString} from "../util/StringUtil";
+import {referenceToString} from "../util/StringUtil";
 import {InjectionDescriptor} from "../metadata/data/InjectionDescriptor";
 import {InjectedSingletonValueProvider} from "../injector/provider/InjectedSingletonValueProvider";
 
@@ -22,8 +22,8 @@ export class Context extends EventDispatcher {
     private extensions = new Set<Type<ContextExtension>>();
     private extensionInstances = new Set<ContextExtension>();
 
-    private modules: Type[] = [];
-    private moduleMetadata: Map<Type, ModuleDescriptor> = new Map<Type, ModuleDescriptor>();
+    private modules: (Type | ModuleDescriptor)[] = [];
+    private moduleMetadata = new Map<Type | ModuleDescriptor, ModuleDescriptor>();
 
     /**
      * @private
@@ -64,7 +64,7 @@ export class Context extends EventDispatcher {
      * @param extension A single entry or list of Type<ContextExtension> entries
      * @returns {Context} Current context operation is performed on
      */
-    install(...extension): this {
+    install(...extension: Type<ContextExtension>[]): this {
         if (this._initialized) {
             throw new Error("Installation of extensions is not permitted as context is already initialized");
         }
@@ -80,7 +80,7 @@ export class Context extends EventDispatcher {
      * @param extension A single entry or list of Type<ContextExtension> entries
      * @returns {Context} Current context operation is performed on
      */
-    uninstall(...extension): this {
+    uninstall(...extension: Type<ContextExtension>[]): this {
         if (this._initialized) {
             throw new Error("Extensions can not be uninstall after a context initialization");
         }
@@ -105,7 +105,7 @@ export class Context extends EventDispatcher {
      * @param module A single entry or list of modules demarcated by @Module decorator.
      * @returns {Context} Current context operation is performed on
      */
-    configure(...module): this {
+    configure(...module: (Type | ModuleDescriptor)[]): this {
         if (this._initialized) {
             throw new Error("Configuration of modules is not permitted as context is already initialized");
         }
@@ -202,55 +202,69 @@ export class Context extends EventDispatcher {
         this.modules.forEach(module => this.registerModule(module));
     }
 
-    private registerModule(module: Type, parent?: Type): void {
-        if (this.moduleMetadata.has(module)) {
-            if (!parent) {
-                console.warn(`
-                    Context warn: ${typeReferenceToString(module)} is mapped sever times to Context.
-                    Not a big problem as second mapping will be ignored but this indicates that there could be some error.
-                `);
+    private registerModule(module: Type | ModuleDescriptor, isTopLevelModule: boolean = true): void {
+        const {moduleMetadata} = this;
+
+        if (moduleMetadata.has(module)) {
+            if (isTopLevelModule) {
+                console.warn(`Context warn: ${referenceToString(module)} is mapped several times to Context.\nNot a big problem as second mapping will be ignored but this indicates that there could be some error.`);
             }
             return;
         }
-        if (!metadata.hasMetadata(module)) {
-            console.warn(`Context warn: ${typeReferenceToString(module)} has no @Module metadata thus it cannot be a module in Context understanding.`);
-            return;
-        }
-        const meta = metadata.getTypeDescriptor(module);
-        if (!meta.moduleDescriptor) {
-            console.warn(`Context warn: ${typeReferenceToString(module)} metadata has no moduleDescriptor thus it cannot be a module in Context understanding.`);
-            return;
+
+        let moduleDescriptor: ModuleDescriptor;
+        if (isModuleDescriptor(module)) {
+            moduleDescriptor = module;
+        } else {
+            moduleDescriptor = this.getModuleDescriptorByType(module);
+            if (!moduleDescriptor) {
+                console.warn(`Context warn: ${referenceToString(module)} has no module metadata available thus it cannot be a module in Context understanding.`);
+                return;
+            }
         }
 
         // Loop through module dependencies and register those modules just before module which requires them
         // just as module might want to override some mappings from required module and that require its mappings to be
         // executed after imported module
-        if (meta.moduleDescriptor.requires && meta.moduleDescriptor.requires.length > 0) {
-            meta.moduleDescriptor.requires.forEach(requiredModule => this.registerModule(requiredModule, module));
+        if (moduleDescriptor.requires && moduleDescriptor.requires.length > 0) {
+            moduleDescriptor.requires.forEach(requiredModule => this.registerModule(requiredModule, false));
         }
-        this.moduleMetadata.set(module, meta.moduleDescriptor);
+
+        moduleMetadata.set(module, moduleDescriptor);
         // Dispatch event so Context extensions can react to new module added to Context scope
         this.dispatchEvent(new ContextModuleEvent(
             ContextModuleEvent.REGISTER_MODULE,
             this,
             module,
-            meta.moduleDescriptor
+            moduleDescriptor
         ));
     }
 
-    private prepareInjector(): void {
-        const injectionsToInstantiate: Type[] = [];
-        this.moduleMetadata.forEach(moduleDescriptor => {
-            if (!moduleDescriptor.mappings) {
-                return;
-            }
-            moduleDescriptor.mappings.forEach(mapping => injectionsToInstantiate.push(...this.prepareMapping(mapping)));
-        });
-        // Instantiate mappings that have been marked so
-        injectionsToInstantiate.forEach(instanceToInstantiate => this.injector.get(instanceToInstantiate));
+    private getModuleDescriptorByType(module: Type): ModuleDescriptor | null {
+        const {moduleMetadata} = this;
+        if (!metadata.hasMetadata(module)) {
+            return null;
+        }
+        const {moduleDescriptor} = metadata.getTypeDescriptor(module);
+        if (!isModuleDescriptor(moduleDescriptor)) {
+            console.warn(`Context warn: ${referenceToString(module)} module metadata in wrong format! ${JSON.stringify(moduleDescriptor)}`);
+        }
+        return moduleDescriptor || null;
     }
 
-    private prepareMapping(mapping: ClassType | InjectionDescriptor): Type[] {
+    private prepareInjector(): void {
+        const {moduleMetadata, injector} = this;
+        const injectionsToInstantiate: Type[] = [];
+
+        [...moduleMetadata.values()]
+            .filter(({mappings}) => !!mappings && mappings.length > 0)
+            .forEach(({mappings}) => mappings.forEach(mapping => injectionsToInstantiate.push(...this.prepareInjectorMapping(mapping))));
+
+        // Instantiate mappings that have been marked so
+        injectionsToInstantiate.forEach(instanceToInstantiate => injector.get(instanceToInstantiate));
+    }
+
+    private prepareInjectorMapping(mapping: ClassType | InjectionDescriptor): Type[] {
         const {injector} = this;
 
         // We have got a singular entry and such are to be mapped as singletons
@@ -291,9 +305,15 @@ export class Context extends EventDispatcher {
 
     private initializeModules(): void {
         this.moduleMetadata.forEach((metadata, module) => {
+            if (isModuleDescriptor(module)) {
+                // If module is mapped without module class but with only descriptor, there is nothing to initialize
+                return;
+            }
+
             // Let us be using sealed modules for a start just as there is no reasonable scenario in which modules
             // should be added and removed dynamically
             this.injector.map(module).asSingleton().seal();
+
             // Instantiate!
             this.injector.get(module);
         });

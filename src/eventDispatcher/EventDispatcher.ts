@@ -5,7 +5,6 @@ import {Event} from "./event/Event";
 
 /**
  * Event dispatcher class which implements event exchange functionality.
- * @author Jānis Radiņš / Kristaps Peļņa
  */
 export class EventDispatcher {
 
@@ -42,7 +41,7 @@ export class EventDispatcher {
 
         const message = `EventDispatcher: addListener already has a mapping. Remove it before calling addListener again.`;
         const info = `event:${event} listener:${listener} scope:${scope}`;
-        console.warn(message + " " + info);
+        console.warn(`${message} ${info}`);
 
         return null;
     }

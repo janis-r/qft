@@ -1,25 +1,45 @@
 import "reflect-metadata";
-import {Context, ContextModuleEvent, EventDispatcher, WebApplicationBundle} from "../src";
+import {CommandMapExtension, Context, ContextModuleEvent, EventDispatcher, WebApplicationBundle} from "../src";
 import {ModuleWithMetatags} from "./elements/ModuleWithMetatags";
 import {SimpleCommand} from "./elements/SimpleCommand";
+import {RequiredModule} from "./elements/RequiredModule";
+import {InjectedClass} from "./elements/InjectedClass";
+import {SimpleModel} from "./elements/SimpleModel";
+import {SimpleModel2} from "./elements/SimpleModel2";
 
-describe("Event dispatcher", () => {
+describe("Application context", () => {
 
     let context: Context;
 
     beforeEach(() => context = new Context());
     afterEach(() => {
-        if (!context) {
-            return;
-        }
-
         if (context.initialized && !context.destroyed) {
-            // Destroying a context should not cause any errors
             expect(() => context.destroy()).not.toThrow(Error);
         }
     });
 
-    it("Initialize", () => {
+    it("Extensions can be installed and uninstalled", () => {
+        context.install(...WebApplicationBundle);
+        WebApplicationBundle.forEach(extension => expect(context.hasExtension(extension)).toBe(true));
+
+        context.uninstall(...WebApplicationBundle);
+        WebApplicationBundle.forEach(extension => expect(context.hasExtension(extension)).toBe(false));
+    });
+
+    it("Configured module will be reported on context init", () => {
+        context.install(...WebApplicationBundle);
+        context.configure(ModuleWithMetatags);
+
+        let moduleIsReported = false;
+        context.addEventListener(ContextModuleEvent.REGISTER_MODULE, () => moduleIsReported = true).withGuards(
+            ({moduleType}: ContextModuleEvent) => moduleType === ModuleWithMetatags
+        );
+        context.initialize();
+
+        expect(moduleIsReported).toBe(true);
+    });
+
+    it("Initialized context will throw error on attempt to update", () => {
         context.initialize();
         expect(context.initialized).toBe(true);
         [
@@ -30,44 +50,7 @@ describe("Event dispatcher", () => {
         ].forEach(method => expect(() => method()).toThrow(Error));
     });
 
-    it("Install", () => {
-        context.install(...WebApplicationBundle);
-        for (const extension of WebApplicationBundle) {
-            expect(context.hasExtension(extension)).toBe(true);
-        }
-    });
-
-    it("Uninstall", () => {
-        context.install(...WebApplicationBundle);
-        context.uninstall(...WebApplicationBundle);
-
-        for (const extension of WebApplicationBundle) {
-            expect(context.hasExtension(extension)).toBe(false);
-        }
-    });
-
-    it("Configure", done => {
-        context.install(...WebApplicationBundle);
-        context.configure(ModuleWithMetatags);
-        const checkRegisteredModule = (event: ContextModuleEvent) => {
-            if (event.moduleType === ModuleWithMetatags) {
-                done();
-            }
-        };
-        context.addEventListener(ContextModuleEvent.REGISTER_MODULE, checkRegisteredModule, this);
-        context.initialize();
-    });
-
-    it("CommandMapExtension", done => {
-        context.install(...WebApplicationBundle);
-        context.configure(ModuleWithMetatags);
-        context.initialize();
-        SimpleCommand.done = done;
-        const dispatcher = context.injector.get(EventDispatcher);
-        dispatcher.dispatchEvent("Test");
-    });
-
-    it("Destroy", () => {
+    it("Context can be destroyed", () => {
         expect(() => context.destroy()).toThrow(Error);
         context.initialize();
         expect(() => context.destroy()).not.toThrow(Error);
@@ -80,8 +63,42 @@ describe("Event dispatcher", () => {
         ].forEach(method =>
             expect(() => method()).toThrow(Error)
         );
+    });
 
-        context = null;
+    it("Command map extension works", () => {
+        context.install(CommandMapExtension);
+        context.configure(ModuleWithMetatags);
+        context.initialize();
+        const callback = jest.fn();
+        SimpleCommand.done = callback;
+        context.injector.get(EventDispatcher).dispatchEvent(SimpleCommand.EVENT);
+        expect(callback).toBeCalled();
+        SimpleCommand.done = null;
+    });
+
+    it("Module descriptor can be used as configuration entity", () => {
+        const module = {
+            requires: [RequiredModule],
+            mappings: [
+                InjectedClass,
+                {map: SimpleModel, useValue: new SimpleModel()},
+                {map: SimpleModel2, useExisting: SimpleModel}
+            ],
+            commands: [
+                {event: SimpleCommand.EVENT, command: SimpleCommand, once: true}
+            ]
+        };
+
+        context.install(...WebApplicationBundle);
+        context.configure(module);
+
+        let moduleIsReported = false;
+        context.addEventListener(ContextModuleEvent.REGISTER_MODULE, () => moduleIsReported = true).withGuards(
+            ({moduleType}: ContextModuleEvent) => moduleType === module
+        );
+        context.initialize();
+
+        expect(moduleIsReported).toBe(true);
     });
 
 });

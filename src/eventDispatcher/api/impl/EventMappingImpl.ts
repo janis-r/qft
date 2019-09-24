@@ -5,7 +5,6 @@ import {Event} from "../../event/Event";
 
 /**
  * Event mappings class used to describe single event name to listener mapping.
- * @author Jānis Radiņš
  */
 export class EventMappingImpl implements EventMapping {
 

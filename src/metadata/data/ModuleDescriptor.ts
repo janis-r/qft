@@ -1,8 +1,9 @@
 import {InjectionDescriptor} from "./InjectionDescriptor";
 import {CommandMappingDescriptor} from "./CommandMappingDescriptor";
 import {Type} from "../../type";
+
 /**
- * System module metadataInternal description format.
+ * System module configuration.
  */
 export interface ModuleDescriptor {
     /**
@@ -17,5 +18,19 @@ export interface ModuleDescriptor {
     /**
      * List of event names that should be mapped to commands as module is added to system scope.
      */
-    commandMap?: CommandMappingDescriptor[];
+    commands?: CommandMappingDescriptor[];
 }
+
+export const isModuleDescriptor = (value: unknown): value is ModuleDescriptor => {
+    if (typeof value !== "object") {
+        return false;
+    }
+    const keys = Object.keys(value);
+    if (keys.length > 3) {
+        return false;
+    }
+    if (keys.some(key => ['requires', 'mappings', 'commands'].indexOf(key) === -1)) {
+        return false;
+    }
+    return true;
+};

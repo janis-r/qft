@@ -3,7 +3,6 @@ import {EventGuard} from "./EventGuard";
 /**
  * Interface which describes public API of a event mapping and which is not intended to be used outside EventDispatcher
  * addEventListener return.
- * @author Jānis Radiņš
  */
 export abstract class EventMapping {
 

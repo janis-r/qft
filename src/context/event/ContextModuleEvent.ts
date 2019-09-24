@@ -22,7 +22,7 @@ export class ContextModuleEvent extends Event {
      */
     constructor(type: string,
                 readonly context: Context,
-                readonly moduleType: Type,
+                readonly moduleType: Type | ModuleDescriptor,
                 readonly moduleDescriptor: ModuleDescriptor) {
         super(type);
     }

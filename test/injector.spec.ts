@@ -77,7 +77,7 @@ describe("Dependency injector configuration", () => {
     });
 
     it("Value can be mapped to InjectionToken", () => {
-        const token = new InjectionToken<{ foo: number, bar: string, lee: number | string }>();
+        const token = new InjectionToken<{ foo: number, bar: string, lee: number | string }>('dummy token');
         const value = {foo: 1, bar: 'string', lee: 'number'};
         injector.map(token).toValue(value);
         expect(injector.get(token)).toBe(value);
@@ -155,7 +155,8 @@ describe("Dependency injector configuration", () => {
     });
 
     it("Unsealed injector mapping can be altered", () => {
-        const mapping = injector.map(SimpleModel2).asSingleton();
+        const mapping = injector.map(SimpleModel2);
+        mapping.asSingleton();
         expect(() => mapping.toValue(new SimpleModel())).not.toThrow(Error);
     });
 

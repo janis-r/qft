@@ -22,9 +22,9 @@ import {SimpleCommand} from "./SimpleCommand";
             useExisting: SimpleModel
         }
     ],
-    commandMap: [
+    commands: [
         {
-            event: "Test",
+            event: SimpleCommand.EVENT,
             command: SimpleCommand,
             once: true
         }

@@ -5,7 +5,7 @@ import {Type} from "../type";
 import {CommandMapping} from "./data/CommandMapping";
 import {Inject} from "../metadata/decorator/Inject";
 import {Injector} from "../injector/Injector";
-import {typeReferenceToString} from "../util/StringUtil";
+import {referenceToString} from "../util/StringUtil";
 
 /**
  * Event command map describes event name to command class mappings and is useful as small pieces of control code
@@ -42,7 +42,7 @@ export class CommandMap {
         const mappings = this.getEventToCommandMappings(eventType);
         if (mappings.some(entry => entry.command === command)) {
             const message = `CommandMap: Event to command mapping already exists. UnMap it before calling map again.`;
-            const info = `event:${eventType} command: ${typeReferenceToString(command)}`;
+            const info = `event:${eventType} command: ${referenceToString(command)}`;
             console.warn(message + " " + info);
             return null;
         }

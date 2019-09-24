@@ -30,7 +30,7 @@ export class CommandMapExtension implements ContextExtension {
         context.listenOnce(ContextLifecycleEvent.DESTROY, this.clearCommandMap, this);
         context.addEventListener(ContextModuleEvent.REGISTER_MODULE, this.createModuleMappings, this)
             .withGuards(
-                ({moduleDescriptor}: ContextModuleEvent) => !!(moduleDescriptor && moduleDescriptor.commandMap)
+                ({moduleDescriptor}: ContextModuleEvent) => !!(moduleDescriptor && moduleDescriptor.commands)
             );
     }
 
@@ -59,8 +59,8 @@ export class CommandMapExtension implements ContextExtension {
         this.context.removeAllEventListeners(this);
     }
 
-    private createModuleMappings({moduleDescriptor: {commandMap}}: ContextModuleEvent): void {
-        commandMap.forEach(({command, event, once}) => {
+    private createModuleMappings({moduleDescriptor: {commands}}: ContextModuleEvent): void {
+        commands.forEach(({command, event, once}) => {
             const commandMapping = this.commandMap.map(event, command);
             if (once === true) {
                 commandMapping.once();

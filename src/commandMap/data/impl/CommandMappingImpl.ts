@@ -5,7 +5,6 @@ import {Command} from "../../command/Command";
 import {CommandMapping} from "../CommandMapping";
 /**
  * Data object to store event command mapping data.
- * @author Jānis Radiņš / Kristaps Peļņa
  */
 export class CommandMappingImpl implements CommandMapping {
 

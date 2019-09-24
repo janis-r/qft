@@ -3,7 +3,7 @@ import {InjectionMapping} from "./data/InjectionMapping";
 import {EventDispatcher} from "../eventDispatcher/EventDispatcher";
 import {MappingEvent} from "./event/MappingEvent";
 import {metadata} from "../metadata/metadata";
-import {typeReferenceToString} from "../util/StringUtil";
+import {referenceToString} from "../util/StringUtil";
 import {PropertyInjection} from "../metadata/data/PropertyInjection";
 import {InjectionToken} from "./data/InjectionToken";
 
@@ -51,7 +51,7 @@ export class Injector extends EventDispatcher {
         if (this.hasDirectMapping(type)) {
             const existingMapping = this.getMapping(type);
             if (existingMapping.sealed) {
-                throw new Error(`Injector error: sealed mapping of type ${typeReferenceToString(type)} override is attempted!`);
+                throw new Error(`Injector error: sealed mapping of type ${referenceToString(type)} override is attempted!`);
             }
             this.dispatchEvent(new MappingEvent(MappingEvent.MAPPING_OVERRIDE, type, existingMapping));
             this.unMap(type);
@@ -75,12 +75,12 @@ export class Injector extends EventDispatcher {
         this.throwErrorIfDestroyed();
 
         if (!this.hasDirectMapping(type)) {
-            throw new Error(`Injector error: no mapping could be located for ${typeReferenceToString(type)} as unMap is attempted!`);
+            throw new Error(`Injector error: no mapping could be located for ${referenceToString(type)} as unMap is attempted!`);
         }
 
         const mapping = this.getMapping(type);
         if (mapping.sealed) {
-            throw new Error(`Injector error: cannot unMap sealed mapping of type: ${typeReferenceToString(type)}!`);
+            throw new Error(`Injector error: cannot unMap sealed mapping of type: ${referenceToString(type)}!`);
         }
 
         // Destroy mapping
@@ -139,7 +139,7 @@ export class Injector extends EventDispatcher {
         this.throwErrorIfDestroyed();
 
         if (!this.hasDirectMapping(type)) {
-            throw new Error(`Injector error: no mapping could be located for ${typeReferenceToString(type)}`);
+            throw new Error(`Injector error: no mapping could be located for ${referenceToString(type)}`);
         }
         return this.mappings.get(type);
     }
@@ -155,7 +155,7 @@ export class Injector extends EventDispatcher {
         this.throwErrorIfDestroyed();
 
         if (!this.hasMapping(type)) {
-            throw new Error(`There are no known mapping for ${typeReferenceToString(type)} type in Injector!`);
+            throw new Error(`There are no known mapping for ${referenceToString(type)} type in Injector!`);
         }
 
         let injector: Injector = this;
@@ -169,7 +169,7 @@ export class Injector extends EventDispatcher {
             injector = injector.parent;
         } while (injector);
 
-        throw new Error(`Injection mapping for ${typeReferenceToString(type)} could not be found in this or any of parent injectors and this should not happen!`);
+        throw new Error(`Injection mapping for ${referenceToString(type)} could not be found in this or any of parent injectors and this should not happen!`);
     }
 
     /**
@@ -199,7 +199,7 @@ export class Injector extends EventDispatcher {
             for (const argData of typeMeta.constructorArguments) {
                 const mappingIsPresent = this.hasMapping(argData.type);
                 if (!mappingIsPresent && !argData.isOptional) {
-                    throw new Error(`Constructor argument of type: ${typeReferenceToString(argData.type)} for ${typeReferenceToString(type)} could not be found in Injector!`);
+                    throw new Error(`Constructor argument of type: ${referenceToString(argData.type)} for ${referenceToString(type)} could not be found in Injector!`);
                 }
                 constructorArgs.push(mappingIsPresent ? this.get(argData.type) : undefined);
             }
@@ -250,8 +250,8 @@ export class Injector extends EventDispatcher {
         propertyInjections.forEach(injection => {
             const mappingIsPresent = this.hasMapping(injection.type);
             if (!mappingIsPresent && !injection.isOptional) {
-                const typeString = typeReferenceToString(injection.type);
-                const classString = typeReferenceToString(target.constructor);
+                const typeString = referenceToString(injection.type);
+                const classString = referenceToString(target.constructor);
                 throw new Error(`Injected property of type: ${typeString} for ${classString} could not be found in Injector!`);
             }
             if (mappingIsPresent) {
