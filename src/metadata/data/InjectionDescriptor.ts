@@ -1,14 +1,15 @@
 import {ClassType} from "../../type";
 import {ProviderValueFactory} from "../../injector/data/ProviderValueFactory";
+import {InjectionToken} from "../..";
 
 /**
  * Injection descriptor.
  */
-export interface InjectionDescriptor<T extends ClassType | any = any> {
+export interface InjectionDescriptor<T = any> {
     /**
      * Injection mapping key which will be used to extract mapping.
      */
-    map: ClassType<T>;
+    map: ClassType<T> | InjectionToken<T>;
     /**
      * Type, instance of which, must be created as injection with signature defined in map
      * property will be requested.
