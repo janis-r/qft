@@ -8,9 +8,9 @@
     "test": "jest --colors --runInBand",
     "transpile": "tsc && tsc -p . --outDir dist/.esnext --module es2015 --target esnext",
     "prepare-build": "rimraf dist && npm run transpile && copyfiles README.md dist",
-    "publish-patch": "npm run prepare-build && npm version patch && ts-node export-package && npm publish dist",
-    "publish-minor": "npm run prepare-build && npm version minor && ts-node export-package && npm publish dist",
-    "publish-major": "npm run prepare-build && npm version major && ts-node export-package && npm publish dist"
+    "publish-patch": "npm run prepare-build && npm version patch && export-package-json && npm publish dist",
+    "publish-minor": "npm run prepare-build && npm version minor && export-package-json && npm publish dist",
+    "publish-major": "npm run prepare-build && npm version major && export-package-json && npm publish dist"
   },
   "license": "MIT",
   "contributors": [
@@ -26,6 +26,7 @@
     "ioc"
   ],
   "dependencies": {
+    "jdr-cmd-utils": "0.0.2",
     "reflect-metadata": "^0.1.12"
   },
   "devDependencies": {
@@ -37,5 +38,8 @@
     "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
     "typescript": "^3.6.2"
+  },
+  "bin": {
+    "export-package": "export-package.js"
   }
 }
