@@ -16,7 +16,7 @@ export class CommandMap {
     @Inject()
     protected readonly injector: Injector;
 
-    //Private storage to all command mappings
+    // Private storage to all command mappings
     private commandMappings: CommandMappingImpl[] = [];
 
     //--------------------
@@ -31,6 +31,7 @@ export class CommandMap {
      * @returns {CommandMapping} data object which describes mapping and can be used to set command execution
      * only once; or null in case if mapping of requested event type is already mapped to class instance.
      */
+    // map<C extends Command, T extends CommandEventType<C>, E = keyof T>(eventType: E, command: Type<C>): CommandMapping;
     map(eventType: string, command: Type<Command>): CommandMapping {
         if (!eventType) {
             throw new Error("CommandMap: A command can not be mapped to an undefined event");

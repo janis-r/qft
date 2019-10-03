@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {Context, Injector} from "../src";
 import {metadata} from "../src/metadata/metadata";
-import {InjectionDescriptor} from "../src/metadata/data/InjectionDescriptor";
+import {InjectionConfig} from "../src/metadata/data/InjectionConfig";
 import {ModuleWithMetatags} from "./elements/ModuleWithMetatags";
 import {InjectedClass} from "./elements/InjectedClass";
 import {Interface} from "./elements/Interface";
@@ -36,9 +36,9 @@ describe("Metadata module", () => {
         expect(mappings.length).toBe(3);
 
         expect(mappings[0]).toBe(InjectedClass);
-        expect((mappings[1] as InjectionDescriptor).map).toBe(SimpleModel);
-        expect((mappings[2] as InjectionDescriptor).map).toBe(SimpleModel2);
-        expect((mappings[2] as InjectionDescriptor).useExisting).toBe(SimpleModel);
+        expect((mappings[1] as InjectionConfig).map).toBe(SimpleModel);
+        expect((mappings[2] as InjectionConfig).map).toBe(SimpleModel2);
+        expect((mappings[2] as InjectionConfig).useExisting).toBe(SimpleModel);
 
         expect(requires.length).toBe(1);
         expect(requires[0]).toBe(RequiredModule);

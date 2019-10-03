@@ -5,7 +5,7 @@ import {InjectionToken} from "../..";
 /**
  * Injection descriptor.
  */
-export interface InjectionDescriptor<T = any> {
+export interface InjectionConfig<T = any> {
     /**
      * Injection mapping key which will be used to extract mapping.
      */

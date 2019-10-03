@@ -7,7 +7,7 @@ import {isModuleDescriptor, ModuleDescriptor} from "../metadata/data/ModuleDescr
 import {metadata} from "../metadata/metadata";
 import {ContextModuleEvent} from "./event/ContextModuleEvent";
 import {referenceToString} from "../util/StringUtil";
-import {InjectionDescriptor} from "../metadata/data/InjectionDescriptor";
+import {InjectionConfig} from "../metadata/data/InjectionConfig";
 import {InjectedSingletonValueProvider} from "../injector/provider/InjectedSingletonValueProvider";
 
 /**
@@ -264,7 +264,7 @@ export class Context extends EventDispatcher {
         injectionsToInstantiate.forEach(instanceToInstantiate => injector.get(instanceToInstantiate));
     }
 
-    private prepareInjectorMapping(mapping: ClassType | InjectionDescriptor): Type[] {
+    private prepareInjectorMapping(mapping: ClassType | InjectionConfig): Type[] {
         const {injector} = this;
 
         // We have got a singular entry and such are to be mapped as singletons
@@ -278,7 +278,7 @@ export class Context extends EventDispatcher {
         }
 
         const injectionsToInstantiate = new Set<Type>();
-        const injection = mapping as InjectionDescriptor;
+        const injection = mapping as InjectionConfig;
         if (typeof injection.map !== "function") {
             throw new Error("Injection mapping doesn't seem to be a valid object type");
         }

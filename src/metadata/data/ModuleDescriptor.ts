@@ -1,4 +1,4 @@
-import {InjectionDescriptor} from "./InjectionDescriptor";
+import {InjectionConfig} from "./InjectionConfig";
 import {CommandMappingDescriptor} from "./CommandMappingDescriptor";
 import {ClassType, Type} from "../../type";
 
@@ -14,7 +14,7 @@ export interface ModuleDescriptor {
      * List of types that should be added as singletons to Injector as this modules is mapped or list of explicit
      * injector instructions for very same purpose.
      */
-    mappings?: (ClassType | InjectionDescriptor)[];
+    mappings?: (ClassType | InjectionConfig)[];
     /**
      * List of event names that should be mapped to commands as module is added to system scope.
      */
