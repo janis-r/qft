@@ -3,7 +3,7 @@ import {Injector} from "../injector/Injector";
 import {ClassType, Type} from "../type";
 import {ContextExtension} from "./data/ContextExtension";
 import {ContextLifecycleEvent} from "./event/ContextLifecycleEvent";
-import {isModuleDescriptor, ModuleDescriptor} from "../metadata/data/ModuleDescriptor";
+import {isModuleDescriptor, ModuleConfig} from "../metadata/data/ModuleConfig";
 import {metadata} from "../metadata/metadata";
 import {ContextModuleEvent} from "./event/ContextModuleEvent";
 import {referenceToString} from "../util/StringUtil";
@@ -22,8 +22,8 @@ export class Context extends EventDispatcher {
     private extensions = new Set<Type<ContextExtension>>();
     private extensionInstances = new Set<ContextExtension>();
 
-    private modules: (Type | ModuleDescriptor)[] = [];
-    private moduleMetadata = new Map<Type | ModuleDescriptor, ModuleDescriptor>();
+    private modules: (Type | ModuleConfig)[] = [];
+    private moduleMetadata = new Map<Type | ModuleConfig, ModuleConfig>();
 
     /**
      * @private
@@ -105,7 +105,7 @@ export class Context extends EventDispatcher {
      * @param module A single entry or list of modules demarcated by @Module decorator.
      * @returns {Context} Current context operation is performed on
      */
-    configure(...module: (Type | ModuleDescriptor)[]): this {
+    configure(...module: (Type | ModuleConfig)[]): this {
         if (this._initialized) {
             throw new Error("Configuration of modules is not permitted as context is already initialized");
         }
@@ -202,7 +202,7 @@ export class Context extends EventDispatcher {
         this.modules.forEach(module => this.registerModule(module));
     }
 
-    private registerModule(module: Type | ModuleDescriptor, isTopLevelModule: boolean = true): void {
+    private registerModule(module: Type | ModuleConfig, isTopLevelModule: boolean = true): void {
         const {moduleMetadata} = this;
 
         if (moduleMetadata.has(module)) {
@@ -212,7 +212,7 @@ export class Context extends EventDispatcher {
             return;
         }
 
-        let moduleDescriptor: ModuleDescriptor;
+        let moduleDescriptor: ModuleConfig;
         if (isModuleDescriptor(module)) {
             moduleDescriptor = module;
         } else {
@@ -240,7 +240,7 @@ export class Context extends EventDispatcher {
         ));
     }
 
-    private getModuleDescriptorByType(module: Type): ModuleDescriptor | null {
+    private getModuleDescriptorByType(module: Type): ModuleConfig | null {
         const {moduleMetadata} = this;
         if (!metadata.hasMetadata(module)) {
             return null;

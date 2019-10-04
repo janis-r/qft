@@ -1,5 +1,5 @@
 import {Event} from "../../eventDispatcher/event/Event";
-import {ModuleDescriptor} from "../../metadata/data/ModuleDescriptor";
+import {ModuleConfig} from "../../metadata/data/ModuleConfig";
 import {Context} from "../Context";
 import {Type} from "../../type";
 
@@ -18,12 +18,12 @@ export class ContextModuleEvent extends Event {
      * @param {string} type
      * @param {Context} context
      * @param {Type} moduleType
-     * @param {ModuleDescriptor} moduleDescriptor
+     * @param {ModuleConfig} moduleDescriptor
      */
     constructor(type: string,
                 readonly context: Context,
-                readonly moduleType: Type | ModuleDescriptor,
-                readonly moduleDescriptor: ModuleDescriptor) {
+                readonly moduleType: Type | ModuleConfig,
+                readonly moduleDescriptor: ModuleConfig) {
         super(type);
     }
 }

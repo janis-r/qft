@@ -1,4 +1,4 @@
-import {ModuleDescriptor} from "./ModuleDescriptor";
+import {ModuleConfig} from "./ModuleConfig";
 import {ConstructorArg} from "./ConstructorArg";
 import {PropertyInjection} from "./PropertyInjection";
 import {TypeMetadataInternal} from "./TypeMetadataInternal";
@@ -27,7 +27,7 @@ export class TypeMetadata {
     /**
      * Module descriptor object that marks type as a module and defines properties of a module entry.
      */
-    readonly moduleDescriptor: ModuleDescriptor;
+    readonly moduleDescriptor: ModuleConfig;
 
     /**
      * Create new instance

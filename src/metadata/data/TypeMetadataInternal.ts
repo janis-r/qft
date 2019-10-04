@@ -1,5 +1,5 @@
 import {ClassType} from "../../type";
-import {ModuleDescriptor} from "./ModuleDescriptor";
+import {ModuleConfig} from "./ModuleConfig";
 import {referenceToString} from "../../util/StringUtil";
 import {InjectionToken} from "../..";
 
@@ -15,7 +15,7 @@ export class TypeMetadataInternal {
     private _optionalPropertyInjections = new Set<string>();
     private _postConstructMethods = new Set<string>();
     private _preDestroyMethods = new Set<string>();
-    private _moduleDescriptor: ModuleDescriptor;
+    private _moduleDescriptor: ModuleConfig;
 
     /**
      * Create new instance
@@ -73,7 +73,7 @@ export class TypeMetadataInternal {
     /**
      * Module descriptor object that marks type as a module and defines properties of a module entry.
      */
-    get moduleDescriptor(): ModuleDescriptor {
+    get moduleDescriptor(): ModuleConfig {
         return this._moduleDescriptor;
     }
 
@@ -119,7 +119,7 @@ export class TypeMetadataInternal {
         this._preDestroyMethods.add(name);
     }
 
-    setModuleDescriptor(descriptor: ModuleDescriptor): void {
+    setModuleDescriptor(descriptor: ModuleConfig): void {
         if (this._moduleDescriptor) {
             throw new Error("Double set of module descriptor and that is clear error!");
         }

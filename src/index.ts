@@ -26,6 +26,7 @@ export * from "./injector/event/MappingEvent";
 export * from "./injector/Injector";
 
 export * from "./metadata/data/InjectionConfig";
+export * from "./metadata/data/ModuleConfig";
 export * from "./metadata/decorator/Inject";
 export * from "./metadata/decorator/Injectable";
 export * from "./metadata/decorator/Module";

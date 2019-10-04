@@ -1,6 +1,6 @@
 import {Type} from "../../type";
 import {metadataInternal} from "../metadata";
-import {ModuleDescriptor} from "../data/ModuleDescriptor";
+import {ModuleConfig} from "../data/ModuleConfig";
 import {Injectable} from "./Injectable";
 
 /**
@@ -9,7 +9,7 @@ import {Injectable} from "./Injectable";
  * such. Actually that will lead to error, if @Module and @Injectable will be both set.
  * @param descriptor Module descriptor
  */
-export function Module(descriptor: ModuleDescriptor): Function {
+export function Module(descriptor: ModuleConfig): Function {
     return (target: Type): Type => {
         //Invoke Injectable just as we have a Module entry
         Injectable()(target);

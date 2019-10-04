@@ -5,7 +5,7 @@ import {ClassType, Type} from "../../type";
 /**
  * System module configuration.
  */
-export interface ModuleDescriptor {
+export interface ModuleConfig {
     /**
      * List of modules particular module is dependant on which have to be loaded for this module to function properly.
      */
@@ -21,7 +21,7 @@ export interface ModuleDescriptor {
     commands?: CommandMappingDescriptor[];
 }
 
-export const isModuleDescriptor = (value: unknown): value is ModuleDescriptor => {
+export const isModuleDescriptor = (value: unknown): value is ModuleConfig => {
     if (typeof value !== "object") {
         return false;
     }
