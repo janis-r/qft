@@ -40,7 +40,7 @@ export class ModuleWithMetatags implements Interface {
     private injector: Injector;
 
     @Optional()
-    get intentionallyIncorrectOptionalMetatagUse(): null {
+    get intentionallyIncorrectOptionalMetaTagUse(): null {
         return null;
     }
 
