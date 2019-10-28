@@ -14,7 +14,7 @@ import {ContextModuleEvent} from "../../event/ContextModuleEvent";
 export class CommandMapExtension implements ContextExtension {
 
     private context: Context;
-    private commandMapMapping: InjectionMapping;
+    private commandMapMapping: InjectionMapping<CommandMap>;
     private commandMap: CommandMap;
 
     extend(context: Context): void {

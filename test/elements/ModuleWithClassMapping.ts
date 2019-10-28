@@ -1,8 +1,8 @@
-import {Module} from "../../src";
+import {Module, ModuleConfig} from "../../src";
 import {SimpleModel} from "./SimpleModel";
 import {InjectedClass} from "./InjectedClass";
 
-@Module({
+export const ModuleWithClassMapping: ModuleConfig = {
     mappings: [
         InjectedClass,
         {
@@ -10,7 +10,4 @@ import {InjectedClass} from "./InjectedClass";
             asSingleton: false
         }
     ]
-})
-export class ModuleWithClassMapping {
-
-}
+};
