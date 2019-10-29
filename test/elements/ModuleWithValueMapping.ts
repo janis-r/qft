@@ -5,7 +5,7 @@ export const ModuleWithValueMapping: ModuleConfig = {
     mappings: [
         {
             map: ValueMapping,
-            useValue: {
+            useValue: { // TODO: Make this produce TS error without explicitly defining it as InjectionConfig<ValueMapping>
                 z: 1
             }
         }

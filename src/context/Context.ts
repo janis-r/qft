@@ -125,23 +125,23 @@ export class Context extends EventDispatcher {
         }
         this.throwErrorIfDestroyed();
 
-        //Create extension instances before we proceed
+        // Create extension instances before we proceed
         this.initializeExtensions();
-        //Inform on pre-initialize, so extensions have a event pointer to do basic setup
+        // Inform on pre-initialize, so extensions have a event pointer to do basic setup
         this.dispatchEvent(new ContextLifecycleEvent(ContextLifecycleEvent.PRE_INITIALIZE, this));
-        //And then dispatch event that marks that all initialization should be finalized by now
+        // And then dispatch event that marks that all initialization should be finalized by now
         this.dispatchEvent(new ContextLifecycleEvent(ContextLifecycleEvent.INITIALIZE, this));
 
-        //Collect list of all module metadata registered with Context
+        // Collect list of all module metadata registered with Context
         this.prepareModules();
-        //Spawn Injector mappings according to module metadata before modules are created
+        // Spawn Injector mappings according to module metadata before modules are created
         this.prepareInjector();
-        //Instantiate modules
+        // Instantiate modules
         this.initializeModules();
 
         this._initialized = true;
 
-        //And dispatch event that we have finished initialization
+        // And dispatch event that we have finished initialization
         this.dispatchEvent(new ContextLifecycleEvent(ContextLifecycleEvent.POST_INITIALIZE, this));
     }
 
@@ -165,13 +165,13 @@ export class Context extends EventDispatcher {
         }
         this.throwErrorIfDestroyed();
 
-        //Inform on pre-initialize, so extensions have a event pointer to do basic destroy
+        // Inform on pre-initialize, so extensions have a event pointer to do basic destroy
         this.dispatchEvent(new ContextLifecycleEvent(ContextLifecycleEvent.PRE_DESTROY, this));
-        //Implement actual tear down as this is encountered
+        // Implement actual tear down as this is encountered
 
         this.dispatchEvent(new ContextLifecycleEvent(ContextLifecycleEvent.DESTROY, this));
 
-        //this will invoke preDestroy on all singleton instances spawned via Injector
+        // this will invoke preDestroy on all singleton instances spawned via Injector
         this.injector.destroy();
 
         this.extensionInstances.clear();
@@ -179,7 +179,7 @@ export class Context extends EventDispatcher {
 
         this._destroyed = true;
 
-        //finalize stuff
+        // finalize stuff
         this.dispatchEvent(new ContextLifecycleEvent(ContextLifecycleEvent.POST_DESTROY, this));
         this.removeAllEventListeners();
     }

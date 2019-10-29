@@ -25,7 +25,7 @@ export class ContextLifecycleEvent extends Event {
      */
     static readonly DESTROY = "clearCommandMap";
     /**
-     * Dispatched as destroyal of Context is complete
+     * Dispatched as destroy of Context is complete
      */
     static readonly POST_DESTROY = "postDestroy";
 

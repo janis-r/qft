@@ -9,7 +9,7 @@ export interface ModuleConfig {
     /**
      * List of modules particular module is dependant on which have to be loaded for this module to function properly.
      */
-    requires?: Type[];
+    requires?: (Type | ModuleConfig)[];
     /**
      * List of types that should be added as singletons to Injector as this modules is mapped or list of explicit
      * injector instructions for very same purpose.
