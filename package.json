@@ -10,7 +10,8 @@
     "prepare-build": "rimraf dist && npm run transpile && copyfiles README.md dist",
     "publish-patch": "npm run prepare-build && npm version patch && export-package-json && npm publish dist",
     "publish-minor": "npm run prepare-build && npm version minor && export-package-json && npm publish dist",
-    "publish-major": "npm run prepare-build && npm version major && export-package-json && npm publish dist"
+    "publish-major": "npm run prepare-build && npm version major && export-package-json && npm publish dist",
+    "link-version": "npm test && npm run prepare-build && export-package-json && cd dist && npm link"
   },
   "license": "MIT",
   "contributors": [
