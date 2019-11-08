@@ -28,6 +28,7 @@ export class AsyncValidationEvent<E> extends Event {
         for (const validator of this.validators) {
             const result = await validator();
             if (result !== true) {
+                this.preventDefault();
                 return result;
             }
         }
