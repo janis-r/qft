@@ -17,6 +17,7 @@ export * from "./context/Context";
 export * from "./eventDispatcher/api/EventGuard";
 export * from "./eventDispatcher/api/EventListener";
 export * from "./eventDispatcher/api/EventMapping";
+export * from "./eventDispatcher/event/AsyncValidationEvent";
 export * from "./eventDispatcher/event/Event";
 export * from "./eventDispatcher/EventDispatcher";
 

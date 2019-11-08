@@ -108,7 +108,7 @@ describe("Event dispatcher", () => {
 
     it("Event toString validation", () => {
         const eventName = "Test Event";
-        expect(new Event(eventName).toString()).toBe(`[Event type=${eventName}, data=undefined]`);
+        expect(new Event(eventName).toString()).toBe(`[Event type=${eventName}, data=undefined, defaultPrevented=false]`);
     });
 
     it("Event dispatch with data", () => {
