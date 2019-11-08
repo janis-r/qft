@@ -5,15 +5,14 @@
 export class Event {
 
     private _defaultPrevented: boolean = false;
+    private _defaultPreventedReason: string;
 
     /**
-     * Create new instance
-     * @param {string} type Event string type
+     * Create new event.
+     * @param type Event string type
      * @param data Data shipped along with event notification, if any
      */
-    constructor(public readonly type: string,
-                public readonly data?: any
-    ) {
+    constructor(public readonly type: string, public readonly data?: any) {
     }
 
     /**
@@ -25,18 +24,24 @@ export class Event {
     }
 
     /**
+     * Optional reason notion of why default action was prevented.
+     */
+    get defaultPreventedReason(): string {
+        return this._defaultPreventedReason;
+    }
+
+    /**
      * Prevent event default action
      */
-    preventDefault(): void {
+    preventDefault(reason?: string): void {
         this._defaultPrevented = true;
+        this._defaultPreventedReason = reason;
     }
 
     /**
      * Get a string representation of the event
      * @returns {string}
      */
-    toString(): string {
-        return `[Event type=${this.type}, data=${this.data}]`;
-    }
+    readonly toString = () => `[Event type=${this.type}, data=${this.data}, defaultPrevented=${this._defaultPrevented}]`;
 
 }
