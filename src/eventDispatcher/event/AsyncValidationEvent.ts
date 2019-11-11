@@ -16,9 +16,9 @@ export class AsyncValidationEvent<E> extends Event {
     /**
      * Add validator in form of function which returns true if validation has passed of anything else that is taken
      * as an error.
-     * @param validator
+     * @param validators
      */
-    readonly addValidator = (validator: Validator<E>) => this.validators.push(validator);
+    readonly addValidator = (...validators: Validator<E>[]) => this.validators.push(...validators);
 
     /**
      * Launch validators one by one in sequence they've been added to list and halt as any returns error or we run

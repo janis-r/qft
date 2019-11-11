@@ -257,11 +257,16 @@ export class Context extends EventDispatcher {
 
     private prepareInjector(): void {
         const {moduleMetadata, injector} = this;
-        const injectionsToInstantiate: Type[] = [];
+        const injectionsToInstantiate = new Set<Type>();
 
         [...moduleMetadata.values()]
             .filter(({mappings}) => !!mappings && mappings.length > 0)
-            .forEach(({mappings}) => mappings.forEach(mapping => injectionsToInstantiate.push(...this.prepareInjectorMapping(mapping))));
+            .map(({mappings}) => mappings)
+            .forEach(moduleMapping => moduleMapping.forEach(
+                injectorMapping => this.prepareInjectorMapping(injectorMapping).forEach(
+                    injectionToInstantiate => injectionsToInstantiate.add(injectionToInstantiate)
+                ))
+            );
 
         // Instantiate mappings that have been marked so
         injectionsToInstantiate.forEach(instanceToInstantiate => injector.get(instanceToInstantiate));

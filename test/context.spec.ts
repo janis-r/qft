@@ -1,5 +1,12 @@
 import "reflect-metadata";
-import {CommandMapExtension, Context, ContextModuleEvent, EventDispatcher, WebApplicationBundle} from "../src";
+import {
+    CommandMapExtension,
+    Context,
+    ContextModuleEvent,
+    EventDispatcher,
+    ModuleConfig,
+    WebApplicationBundle
+} from "../src";
 import {ModuleWithMetatags} from "./elements/ModuleWithMetatags";
 import {SimpleCommand} from "./elements/SimpleCommand";
 import {RequiredModule} from "./elements/RequiredModule";
@@ -99,6 +106,34 @@ describe("Application context", () => {
         context.initialize();
 
         expect(moduleIsReported).toBe(true);
+    });
+
+    it("Multiple mappings of same class with instantiate directive will create only single entry", () => {
+        let instantiatedClasses = 0;
+        const ClassToInit = (class Foo {
+            constructor() {
+                instantiatedClasses++;
+            }
+        });
+
+        const BaseModule: ModuleConfig = {
+            mappings: [
+                {map: ClassToInit, instantiate: true}
+            ]
+        };
+        const ExtendingModule: ModuleConfig = {
+            requires: [BaseModule],
+            mappings: [
+                {map: ClassToInit, instantiate: true}
+            ]
+        };
+
+
+        context.install(...WebApplicationBundle);
+        context.configure(BaseModule, ExtendingModule);
+        context.initialize();
+
+        expect(instantiatedClasses).toBe(1);
     });
 
 });
