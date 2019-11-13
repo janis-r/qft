@@ -176,7 +176,7 @@ export class EventDispatcher {
      * @param scope     Scope upon which listener should be executed.
      * @returns {EventMappingImpl[]} List of event mappings or empty list if no mappings are found.
      */
-    private getEventMappings(eventType: string, listener?: EventListener, scope?: Object): EventMappingImpl[] {
+    private getEventMappings(eventType: string | Symbol, listener?: EventListener, scope?: Object): EventMappingImpl[] {
         const mappings: EventMappingImpl[] = [];
         for (const mapping of this.eventMap) {
             if (eventType && mapping.event !== eventType) {

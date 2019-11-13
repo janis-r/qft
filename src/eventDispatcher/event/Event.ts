@@ -12,7 +12,7 @@ export class Event {
      * @param type Event string type
      * @param data Data shipped along with event notification, if any
      */
-    constructor(public readonly type: string, public readonly data?: any) {
+    constructor(public readonly type: string | Symbol, public readonly data?: any) {
     }
 
     /**
