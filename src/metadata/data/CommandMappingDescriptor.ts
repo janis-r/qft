@@ -1,5 +1,6 @@
 import {Command} from "../../commandMap/command/Command";
 import {Type} from "../../type";
+import {Event} from "../../eventDispatcher/event/Event";
 
 /**
  * Command mapping descriptor to be used within system module meta data.
