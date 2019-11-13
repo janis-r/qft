@@ -32,7 +32,7 @@ export class CommandMap {
      * only once; or null in case if mapping of requested event type is already mapped to class instance.
      */
     // map<C extends Command, T extends CommandEventType<C>, E = keyof T>(eventType: E, command: Type<C>): CommandMapping;
-    map(eventType: string, command: Type<Command>): CommandMapping {
+    map(eventType: Event['type'], command: Type<Command>): CommandMapping {
         if (!eventType) {
             throw new Error("CommandMap: A command can not be mapped to an undefined event");
         }
@@ -73,7 +73,7 @@ export class CommandMap {
      * @param command   Command class which should be unmapped.
      * @returns {boolean} which indicates if the unMapping has been successful.
      */
-    unMap(eventType: string, command: Type<Command>): boolean;
+    unMap(eventType: Event['type'], command: Type<Command>): boolean;
 
     /**
      * Remove event name to command mapping.

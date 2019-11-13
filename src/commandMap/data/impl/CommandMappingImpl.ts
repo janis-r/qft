@@ -18,7 +18,7 @@ export class CommandMappingImpl implements CommandMapping {
      * @param command   Command class which to execute as event is encountered.
      */
     constructor(
-        public readonly eventType: string,
+        public readonly eventType: Event['type'],
         public readonly command: Type<Command>) {
     }
 
