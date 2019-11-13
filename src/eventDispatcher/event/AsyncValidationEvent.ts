@@ -9,7 +9,7 @@ export class AsyncValidationEvent<E> extends Event {
 
     private validators: Validator<E>[] = [];
 
-    constructor(type: string, data?: any) {
+    constructor(type: Event['type'], data?: Event['data']) {
         super(type, data);
     }
 
