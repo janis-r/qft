@@ -145,7 +145,7 @@ export class CommandMap {
      * @param command Command to which event is mapped or nothing in case if that is not required look up param.
      * @returns {CommandMappingImpl[]} List of commands mappings attached to requested event type.
      */
-    private getEventToCommandMappings(eventType: string | Symbol, command?: Type<Command>): CommandMappingImpl[] {
+    private getEventToCommandMappings(eventType: Event['type'], command?: Type<Command>): CommandMappingImpl[] {
         return this.commandMappings
             .filter(mapping => mapping.eventType === eventType)
             .filter(mapping => !command || mapping.command === command);

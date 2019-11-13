@@ -8,7 +8,7 @@ export interface CommandMappingDescriptor {
     /**
      * Event name upon which command mapped in command property should be invoked.
      */
-    readonly event: string,
+    readonly event: Event['type'],
     /**
      * Command type that should be invoked as event name listed in event property is fired in system context.
      */
