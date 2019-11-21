@@ -60,14 +60,10 @@ export class CommandMapExtension implements ContextExtension {
     }
 
     private createModuleMappings({moduleDescriptor: {commands}}: ContextModuleEvent): void {
-        commands.forEach(({command, event, once}) => {
-            (Array.isArray(command) ? command : [command]).forEach(command => {
-                const commandMapping = this.commandMap.map(event, command);
-                if (once === true) {
-                    commandMapping.once();
-                }
-            })
-        });
+        const {commandMap} = this;
+        commands.forEach(({command, event, once}) => (!Array.isArray(command) ? [command] : command)
+            .forEach(command => commandMap.map(event, command, once))
+        );
     }
 
 }

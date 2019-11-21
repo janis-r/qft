@@ -2,6 +2,7 @@ import "reflect-metadata";
 
 export * from "./commandMap/command/Command";
 export * from "./commandMap/command/MacroCommand";
+export * from "./commandMap/command/SubCommand";
 export * from "./commandMap/data/CommandMapping";
 export * from "./commandMap/CommandMap";
 

@@ -1,24 +1,26 @@
 import {Command} from "./Command";
-import {Type} from "../../type";
 import {Injector} from "../../injector/Injector";
 import {Inject} from "../../metadata/decorator/Inject";
 import {EventGuard} from "../../eventDispatcher/api/EventGuard";
 import {Event} from "../../eventDispatcher/event/Event";
+import {isSubCommand, SubCommand} from "./SubCommand";
 
 /**
  * Macro command provides the functionality of sequential execution of a sub-command batch.
  */
-export abstract class MacroCommand extends Command {
+export abstract class MacroCommand<T = void> extends Command {
 
     @Inject()
-    protected readonly injector: Injector;
+    private readonly __injector: Injector;
 
     @Inject()
-    protected readonly event: Event;
+    private readonly __event: Event;
 
-    private readonly commands: SubCommand[] = [];
+    protected readonly commands: ReadonlyArray<SubCommand<T>>;
 
-    constructor (commands: (SubCommand['type'] | SubCommand)[]) {
+    private halted = false;
+
+    protected constructor(commands: (SubCommand['type'] | SubCommand)[]) {
         super();
         this.commands = commands.map(entry => !isSubCommand(entry) ? {type: entry} : entry);
     }
@@ -34,11 +36,15 @@ export abstract class MacroCommand extends Command {
 
         for (const command of commands) {
             await this.executeSubCommand(command);
+            if (this.halted) {
+                // Stop sub command execution if breakExecution is set to true
+                break;
+            }
         }
     }
 
-    protected executeSubCommand<T = void>({type, guards} : SubCommand): T | Promise<T> {
-        const {injector} = this;
+    protected executeSubCommand({type, guards}: SubCommand<T>): T | Promise<T> {
+        const {__injector: injector} = this;
         // Execution is blocked by a guard
         if (this.executionAllowedByGuards(guards) === false) {
             return;
@@ -49,7 +55,7 @@ export abstract class MacroCommand extends Command {
 
         // If we're dealing with async Command - wait command to execute before dismantling Command instance
         if (possiblePromise && isPromise(possiblePromise)) {
-            return new Promise<any>(async resolve => {
+            return new Promise<T>(async resolve => {
                 const response = await possiblePromise;
                 injector.destroyInstance(command);
                 resolve(response);
@@ -59,26 +65,29 @@ export abstract class MacroCommand extends Command {
     }
 
     /**
+     * Stop macro command execution chain.
+     */
+    protected readonly haltExecution = () => this.halted = true;
+
+    /**
+     * Check if sub command execution was halted due to haltExecution() call or all sub commands were executed properly.
+     */
+    protected get executionIsHalted(): boolean {
+        return this.halted;
+    }
+
+    /**
      * Find if command execution is allowed by guards.
      * @returns {boolean} True if guards aren't set or none of them has reason to stop execution.
      */
     private executionAllowedByGuards(guards?: EventGuard[]): boolean {
+        const {__event: event} = this;
         if (!guards) {
             return true;
         }
-        return guards.some(guard => guard(this.event) === false) === false;
+        return guards.some(guard => guard(event) === false) === false;
     }
 
 }
-
-type SubCommand = {
-    type: Type<Command>,
-    guards?: EventGuard[]
-};
-
-const isSubCommand = (entry: unknown): entry is SubCommand => {
-    const keys = Object.keys(entry);
-    return keys.length > 0 && keys.length <= 2 && keys.indexOf("type") !== -1;
-};
 
 const isPromise = (entry: unknown): entry is Promise<any> => Promise.resolve(entry) === entry;

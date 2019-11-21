@@ -28,11 +28,11 @@ export class CommandMap {
      * @param eventType String event name which will tiger execution of a command.
      * @param command   Command class which should implement <code>Command</code> interface or, at least,
      * should have execute method defined with same signature.
+     * @param executeOnce Set to true if event mapping should be removed after first successful execution
      * @returns {CommandMapping} data object which describes mapping and can be used to set command execution
      * only once; or null in case if mapping of requested event type is already mapped to class instance.
      */
-    // map<C extends Command, T extends CommandEventType<C>, E = keyof T>(eventType: E, command: Type<C>): CommandMapping;
-    map(eventType: Event['type'], command: Type<Command>): CommandMapping {
+    map(eventType: Event['type'], command: Type<Command>, executeOnce = false): CommandMapping {
         if (!eventType) {
             throw new Error("CommandMap: A command can not be mapped to an undefined event");
         }
@@ -51,6 +51,9 @@ export class CommandMap {
         const mapping = new CommandMappingImpl(eventType, command);
         this.commandMappings.push(mapping);
 
+        if (executeOnce) {
+            mapping.once();
+        }
         return mapping;
     }
 
