@@ -25,7 +25,7 @@ export class EventMappingImpl implements EventMapping {
      * @param listener  Listener function.
      * @param context   Listener scope to apply as it is executed
      */
-    constructor(public readonly event: string,
+    constructor(public readonly event: Event['type'],
                 public readonly listener: EventListener,
                 public readonly context: Object) {
     }
