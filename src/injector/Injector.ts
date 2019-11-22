@@ -248,14 +248,32 @@ export class Injector extends EventDispatcher {
 
         // Fill Injected class properties
         propertyInjections.forEach(injection => {
-            const mappingIsPresent = this.hasMapping(injection.type);
+
+            let lookupType = injection.type;
+            let mappingIsPresent = this.hasMapping(lookupType);
+
+            if (!mappingIsPresent && !InjectionToken.isPrototypeOf(injection.type)) {
+                const cls = injection.type as ClassType<any>;
+                const mapping = [...this.mappings.keys()].find(mappedClass => cls.isPrototypeOf(mappedClass));
+                if (mapping) {
+                    lookupType = mapping;
+                }
+                // console.log('>> exp', mapping);
+                mappingIsPresent = true;
+            }
+
+
             if (!mappingIsPresent && !injection.isOptional) {
                 const typeString = referenceToString(injection.type);
                 const classString = referenceToString(target.constructor);
-                throw new Error(`Injected property of type: ${typeString} for ${classString} could not be found in Injector!`);
+
+                console.log('>> injection', injection);
+                console.log('>> mappings', this.mappings);
+
+                throw new Error(`Injected property: [${injection.name}] of type: [${typeString}] for [${classString}] could not be found in Injector!`);
             }
             if (mappingIsPresent) {
-                target[injection.name] = this.get(injection.type);
+                target[injection.name] = this.get(lookupType);
             }
         });
 
@@ -265,9 +283,9 @@ export class Injector extends EventDispatcher {
         if (!postponePostConstruct) {
             postConstructMethods.forEach(method => target[method]());
         } else {
-            // With slight delay if instructed so. This is required for singleton instances just we're running into problem of not having
-            // instance mapped in Injector as PotConstruct is called. Which will result in errors in case class will produce any actions that
-            // in response must acquire mapped class instance.
+            // With slight delay if instructed so. This is required for singleton instances just as we're running
+            // into problem of not having instance mapped in Injector as PotConstruct is called. Which will result
+            // in errors in case class will produce any actions that in response must acquire mapped class instance.
             setTimeout(() => postConstructMethods.forEach(method => target[method]()));
         }
 

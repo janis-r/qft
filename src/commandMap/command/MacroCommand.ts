@@ -20,7 +20,7 @@ export abstract class MacroCommand<T = void> extends Command {
 
     private halted = false;
 
-    protected constructor(commands: (SubCommand['type'] | SubCommand)[]) {
+    protected constructor(...commands: Array<SubCommand['type'] | SubCommand>) {
         super();
         this.commands = commands.map(entry => !isSubCommand(entry) ? {type: entry} : entry);
     }
@@ -35,7 +35,10 @@ export abstract class MacroCommand<T = void> extends Command {
         }
 
         for (const command of commands) {
-            await this.executeSubCommand(command);
+            const result = this.executeSubCommand(command);
+            if (isPromise(result)) {
+                await result;
+            }
             if (this.halted) {
                 // Stop sub command execution if breakExecution is set to true
                 break;
@@ -51,17 +54,19 @@ export abstract class MacroCommand<T = void> extends Command {
         }
 
         const command = injector.instantiateInstance(type);
-        const possiblePromise = command.execute();
+        const valueOrPromiseOfValue = command.execute();
 
         // If we're dealing with async Command - wait command to execute before dismantling Command instance
-        if (possiblePromise && isPromise(possiblePromise)) {
+        if (valueOrPromiseOfValue && isPromise(valueOrPromiseOfValue)) {
             return new Promise<T>(async resolve => {
-                const response = await possiblePromise;
+                const response = await valueOrPromiseOfValue;
                 injector.destroyInstance(command);
                 resolve(response);
             });
         }
         injector.destroyInstance(command);
+
+        return valueOrPromiseOfValue;
     }
 
     /**

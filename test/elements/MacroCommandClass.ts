@@ -8,12 +8,12 @@ export class MacroCommandClass extends MacroCommand {
     static done: () => void;
 
     constructor() {
-        super([
+        super(
             AsyncCommand,
             SimpleCommand,
             {type: SimpleCommand2, guards: [() => true]},
             {type: SimpleCommand2, guards: [() => false]}
-        ]);
+        );
     }
 
     async execute(): Promise<void> {
