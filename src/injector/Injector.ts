@@ -249,6 +249,8 @@ export class Injector extends EventDispatcher {
         // Fill Injected class properties
         propertyInjections.forEach(injection => {
 
+            // TODO: Skipping to type by prototype must be civilized
+
             let lookupType = injection.type;
             let mappingIsPresent = this.hasMapping(lookupType);
 
@@ -258,18 +260,12 @@ export class Injector extends EventDispatcher {
                 if (mapping) {
                     lookupType = mapping;
                 }
-                // console.log('>> exp', mapping);
                 mappingIsPresent = true;
             }
-
 
             if (!mappingIsPresent && !injection.isOptional) {
                 const typeString = referenceToString(injection.type);
                 const classString = referenceToString(target.constructor);
-
-                console.log('>> injection', injection);
-                console.log('>> mappings', this.mappings);
-
                 throw new Error(`Injected property: [${injection.name}] of type: [${typeString}] for [${classString}] could not be found in Injector!`);
             }
             if (mappingIsPresent) {
