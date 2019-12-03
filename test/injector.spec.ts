@@ -10,6 +10,7 @@ import {ClassWithInjectAndPreDestroySubClass} from "./elements/ClassWithInjectAn
 import {ClassWithPostConstruct} from "./elements/ClassWithPostConstruct";
 import {ClassWithInjectedToken} from "./elements/ClassWithInjectedToken";
 import {token} from "./elements/injection-token";
+import {ClassWithOptionalInjection} from "./elements/ClassWithOptionalInjection";
 
 describe("Dependency injector configuration", () => {
 
@@ -220,6 +221,10 @@ describe("Apply injections", () => {
         expect(() => injector.injectInto(new SuperClassWithInjections())).not.toThrow(Error);
     });
 
+    it("Missing @Optional injections will not throw error", () => {
+        expect(() => injector.instantiateInstance(ClassWithOptionalInjection)).not.toThrow(Error);
+    });
+
     it("Property injections work", () => {
         const model = injector.instantiateInstance(ClassWithInjectAndPreDestroy);
         expect(model.injector).toBe(injector);
@@ -245,5 +250,4 @@ describe("Apply injections", () => {
         ClassWithInjectAndPreDestroy.onDestroy = resolve;
         injector.destroyInstance(model);
     }));
-
 });

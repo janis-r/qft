@@ -259,8 +259,8 @@ export class Injector extends EventDispatcher {
                 const mapping = [...this.mappings.keys()].find(mappedClass => cls.isPrototypeOf(mappedClass));
                 if (mapping) {
                     lookupType = mapping;
+                    mappingIsPresent = true;
                 }
-                mappingIsPresent = true;
             }
 
             if (!mappingIsPresent && !injection.isOptional) {
