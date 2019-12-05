@@ -21,7 +21,7 @@ export interface ModuleConfig {
     commands?: CommandMappingDescriptor[];
 }
 
-export const isModuleDescriptor = (value: unknown): value is ModuleConfig => {
+export const isModuleConfig = (value: unknown): value is ModuleConfig => {
     if (typeof value !== "object") {
         return false;
     }

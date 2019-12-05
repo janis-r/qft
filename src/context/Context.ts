@@ -3,7 +3,7 @@ import {Injector} from "../injector/Injector";
 import {ClassType, Type} from "../type";
 import {ContextExtension} from "./data/ContextExtension";
 import {ContextLifecycleEvent} from "./event/ContextLifecycleEvent";
-import {isModuleDescriptor, ModuleConfig} from "../metadata/data/ModuleConfig";
+import {isModuleConfig, ModuleConfig} from "../metadata/data/ModuleConfig";
 import {metadata} from "../metadata/metadata";
 import {ContextModuleEvent} from "./event/ContextModuleEvent";
 import {referenceToString} from "../util/StringUtil";
@@ -216,7 +216,7 @@ export class Context extends EventDispatcher {
         }
 
         let moduleDescriptor: ModuleConfig;
-        if (isModuleDescriptor(module)) {
+        if (isModuleConfig(module)) {
             moduleDescriptor = module;
         } else {
             moduleDescriptor = this.getModuleDescriptorByType(module);
@@ -249,7 +249,7 @@ export class Context extends EventDispatcher {
             return null;
         }
         const {moduleDescriptor} = metadata.getTypeDescriptor(module);
-        if (!isModuleDescriptor(moduleDescriptor)) {
+        if (!isModuleConfig(moduleDescriptor)) {
             console.warn(`Context warn: ${referenceToString(module)} module metadata in wrong format! ${JSON.stringify(moduleDescriptor)}`);
         }
         return moduleDescriptor || null;
@@ -313,7 +313,7 @@ export class Context extends EventDispatcher {
 
     private initializeModules(): void {
         this.moduleMetadata.forEach((metadata, module) => {
-            if (isModuleDescriptor(module)) {
+            if (isModuleConfig(module)) {
                 // If module is mapped without module class but with only descriptor, there is nothing to initialize
                 return;
             }
