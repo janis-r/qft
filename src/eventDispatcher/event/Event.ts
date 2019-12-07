@@ -2,7 +2,7 @@
  * Basic event class which holds event type and data properties and which can be used as it is or
  * could be extended by any custom event class.
  */
-export class Event {
+export class Event<T = any> {
 
     private _defaultPrevented: boolean = false;
     private _defaultPreventedReason: string;
@@ -12,7 +12,7 @@ export class Event {
      * @param type Event string type
      * @param data Data shipped along with event notification, if any
      */
-    constructor(public readonly type: string | Symbol, public readonly data?: any) {
+    constructor(public readonly type: string | Symbol, public readonly data?: T) {
     }
 
     /**
