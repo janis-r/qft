@@ -11,16 +11,16 @@ export class ContextModuleEvent extends Event {
     /**
      * Dispatched as new module is registered with Context
      */
-    static readonly REGISTER_MODULE = "registerModule";
+    static readonly REGISTER_MODULE = Symbol("registerModule");
 
     /**
      * Create new instance
-     * @param {string} type
+     * @param {Symbol} type
      * @param {Context} context
      * @param {Type} moduleType
      * @param {ModuleConfig} moduleDescriptor
      */
-    constructor(type: string,
+    constructor(type: Symbol,
                 readonly context: Context,
                 readonly moduleType: Type | ModuleConfig,
                 readonly moduleDescriptor: ModuleConfig) {

@@ -99,9 +99,9 @@ export class Injector extends EventDispatcher {
      * @throws Error in case if method i invoked on destroyed instance
      */
     hasDirectMapping(type: ClassType | InjectionToken): boolean {
+        const {mappings} = this;
         this.throwErrorIfDestroyed();
-
-        return this.mappings.has(type);
+        return mappings.has(type);
     }
 
     /**
@@ -136,12 +136,13 @@ export class Injector extends EventDispatcher {
      * @throws Error when no mapping was found for the specified dependency
      */
     getMapping<T>(type: ClassType<T> | InjectionToken<T>): InjectionMapping<T> {
+        const {mappings} = this;
         this.throwErrorIfDestroyed();
 
         if (!this.hasDirectMapping(type)) {
             throw new Error(`Injector error: no mapping could be located for ${referenceToString(type)}`);
         }
-        return this.mappings.get(type);
+        return mappings.get(type);
     }
 
     /**
@@ -187,7 +188,8 @@ export class Injector extends EventDispatcher {
 
         // There is no metadata for type - simply create instance with no constructor arguments
         if (!metadata.hasMetadata(type)) {
-            // TODO: Even though lacking metadata indicates that there is no direct meta mapping for given type, it still might inherit from some class that has?
+            // TODO: Even though lacking metadata indicates that there is no direct meta mapping for given type, it
+            //  still might inherit from some class that has?
             return this.injectInto(new type());
         }
 
@@ -249,17 +251,14 @@ export class Injector extends EventDispatcher {
         // Fill Injected class properties
         propertyInjections.forEach(injection => {
 
-            // TODO: Skipping to type by prototype must be civilized
-
             let lookupType = injection.type;
             let mappingIsPresent = this.hasMapping(lookupType);
 
             if (!mappingIsPresent && !InjectionToken.isPrototypeOf(injection.type)) {
-                const cls = injection.type as ClassType<any>;
-                const mapping = [...this.mappings.keys()].find(mappedClass => cls.isPrototypeOf(mappedClass));
-                if (mapping) {
-                    lookupType = mapping;
-                    mappingIsPresent = true;
+                // TODO: Indirect type matching must be normalized
+                const indirectType = this.getIndirectTypeMapping(lookupType);
+                if (indirectType) {
+                    lookupType = indirectType;
                 }
             }
 
@@ -337,5 +336,13 @@ export class Injector extends EventDispatcher {
         if (this._destroyed) {
             throw new Error("Injector instance is already destroyed!");
         }
+    }
+
+    private getIndirectTypeMapping(type: ClassType | InjectionToken): ClassType | InjectionToken {
+        if (type instanceof InjectionToken) {
+            return undefined;
+        }
+        const mapping = [...this.mappings.values()].find(mapping => mapping.satisfiesType(type));
+        return mapping?.type;
     }
 }

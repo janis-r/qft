@@ -13,21 +13,21 @@ export class MappingEvent extends Event {
      * changes should be done by first removing the existing mapping.
      * @type {string}
      */
-    static readonly MAPPING_OVERRIDE = 'mappingOverride';
+    static readonly MAPPING_OVERRIDE = Symbol('mappingOverride');
 
     /**
      * This event is dispatched when a new mapping is created.
      * @type {string}
      */
-    static readonly MAPPING_CREATED = 'mappingCreated';
+    static readonly MAPPING_CREATED = Symbol('mappingCreated');
 
     /**
      * This event is dispatched when a mapping is destroyed.
      * @type {string}
      */
-    static readonly MAPPING_DESTROYED = 'mappingDestroyed';
+    static readonly MAPPING_DESTROYED = Symbol('mappingDestroyed');
 
-    constructor(type: string, readonly mappedType: ClassType | InjectionToken, readonly mapping: InjectionMapping<any>) {
+    constructor(type: Symbol, readonly mappedType: ClassType | InjectionToken, readonly mapping: InjectionMapping<any>) {
         super(type);
     }
 

@@ -1,5 +1,6 @@
 import {Context} from "../Context";
 import {Event} from "../../eventDispatcher/event/Event";
+
 /**
  * Context lifecycle event represents different stages in Context life
  */
@@ -27,14 +28,14 @@ export class ContextLifecycleEvent extends Event {
     /**
      * Dispatched as destroy of Context is complete
      */
-    static readonly POST_DESTROY = "postDestroy";
+    static readonly POST_DESTROY = Symbol("postDestroy");
 
     /**
      * Create new instance
      * @param type Event type
      * @param context Context instance that originated event
      */
-    constructor(type: string, public readonly context: Context) {
+    constructor(type: Symbol, public readonly context: Context) {
         super(type);
     }
 

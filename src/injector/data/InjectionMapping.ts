@@ -54,13 +54,14 @@ export class InjectionMapping<T = any> {
      * @returns {InjectionMapping} The InjectionMapping the method is invoked on
      */
     asSingleton(): Pick<this, "seal"> {
+        const {provider} = this;
         if (this._sealed || this._destroyed) {
             throw new Error(`Can't change a sealed or destroyed mapping.`);
         }
-        if (!this.provider || !(this.provider instanceof InjectedSingletonValueProvider)) {
+        if (!provider || !(provider instanceof InjectedSingletonValueProvider)) {
             throw new Error(`Injection provider is not set or it's not Singleton value provider`);
         }
-        this.provider.asSingleton();
+        provider.asSingleton();
         return this;
     }
 
@@ -120,7 +121,7 @@ export class InjectionMapping<T = any> {
     }
 
     /**
-     *
+     * Map to factory function used to initialize mapped value
      * @param factory
      */
     toFactory(factory: ProviderValueFactory<T>): Pick<this, "asSingleton" | "seal"> {
@@ -187,6 +188,19 @@ export class InjectionMapping<T = any> {
         }
         this.provider = null;
         this._destroyed = true;
+    }
+
+    /**
+     * Check if requested type can be satisfied by current mapping by checking if type is within inheritance chain
+     * of injection mapping
+     * @param type
+     */
+    satisfiesType(type: ClassType): boolean {
+        if (type === this.type) {
+            return true;
+        }
+
+        return type.isPrototypeOf(this.type);
     }
 
     private setProvider(provider: InjectedValueProvider): void {
