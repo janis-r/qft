@@ -8,23 +8,23 @@ export class ContextLifecycleEvent extends Event {
     /**
      * Dispatched as context is just about to be initialized
      */
-    static readonly PRE_INITIALIZE = "preInitialize";
+    static readonly PRE_INITIALIZE = Symbol("preInitialize");
     /**
      * Dispatched as pre initialize is done and actual initialization of Context injector and modules will take place
      */
-    static readonly INITIALIZE = "initialize";
+    static readonly INITIALIZE = Symbol("initialize");
     /**
      * Dispatched as Context initialization is complete
      */
-    static readonly POST_INITIALIZE = "postInitialize";
+    static readonly POST_INITIALIZE = Symbol("postInitialize");
     /**
      * Dispatched as Context destroy is just about to begin.
      */
-    static readonly PRE_DESTROY = "preDestroy";
+    static readonly PRE_DESTROY = Symbol("preDestroy");
     /**
      * Dispatched as actual destroy of Context is performed.
      */
-    static readonly DESTROY = "clearCommandMap";
+    static readonly DESTROY = Symbol("clearCommandMap");
     /**
      * Dispatched as destroy of Context is complete
      */
