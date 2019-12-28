@@ -259,6 +259,7 @@ export class Injector extends EventDispatcher {
                 const indirectType = this.getIndirectTypeMapping(lookupType);
                 if (indirectType) {
                     lookupType = indirectType;
+                    mappingIsPresent = true;
                 }
             }
 
