@@ -1,10 +1,11 @@
+import {Event} from "../event/Event";
 import {EventGuard} from "./EventGuard";
 
 /**
  * Interface which describes public API of a event mapping and which is not intended to be used outside EventDispatcher
  * addEventListener return.
  */
-export abstract class EventMapping {
+export abstract class EventMapping<E extends Event> {
 
     /**
      * Unique id of a mapping.
@@ -24,5 +25,5 @@ export abstract class EventMapping {
      * @param guards List of EventGuard callback methods that might prevent execution of listener.
      * @returns {this} so we can call other methods of this class instantly from return value
      */
-    abstract withGuards(...guards: EventGuard[]): this;
+    abstract withGuards(...guards: EventGuard<E>[]): this;
 }

@@ -6,7 +6,7 @@ import {Event} from "../../event/Event";
 /**
  * Event mappings class used to describe single event name to listener mapping.
  */
-export class EventMappingImpl implements EventMapping {
+export class EventMappingImpl<E extends Event> implements EventMapping<E> {
 
     private static EVENT_MAPPING_ID: number = 0;
 
@@ -53,7 +53,7 @@ export class EventMappingImpl implements EventMapping {
      * @param guards List of EventGuard callback methods that might prevent execution of listener.
      * @returns {EventMappingImpl} so we can call other methods of this class instantly from return value
      */
-    withGuards(...guards: EventGuard[]): this {
+    withGuards(...guards: EventGuard<E>[]): this {
         this.guards = this.guards.concat(guards);
         return this;
     }

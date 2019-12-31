@@ -11,7 +11,7 @@ export class EventDispatcher {
     /**
      * List of all event mappings known to event dispatcher
      */
-    private eventMap: EventMappingImpl[] = [];
+    private eventMap: EventMappingImpl<Event>[] = [];
 
     constructor() {
         this.addEventListener.bind(this);
@@ -36,7 +36,7 @@ export class EventDispatcher {
      * which is to be used in order to set some of mapping properties like <code>once()</code> which will make listener
      * to be executed upon first event dispatch and then be gone.
      */
-    addEventListener(event: Event['type'], listener: EventListener, scope?: Object): EventMapping {
+    addEventListener<E extends Event>(event: Event['type'], listener: EventListener<E>, scope?: Object): EventMapping<E> {
         if (!event) {
             throw new Error("EventDispatcher: Listener can not be added to an invalid event");
         }
@@ -65,7 +65,7 @@ export class EventDispatcher {
      * which is to be used in order to set some of mapping properties like <code>once()</code> which will make listener
      * to be executed upon first event dispatch and then be gone.
      */
-    listenOnce(event: Event['type'], listener: EventListener, scope?: Object): EventMapping {
+    listenOnce<E extends Event>(event: Event['type'], listener: EventListener<E>, scope?: Object): EventMapping<E> {
         return this.addEventListener(event, listener, scope).once();
     }
 
@@ -185,8 +185,8 @@ export class EventDispatcher {
      * @param scope     Scope upon which listener should be executed.
      * @returns {EventMappingImpl[]} List of event mappings or empty list if no mappings are found.
      */
-    private getEventMappings(eventType: Event['type'], listener?: EventListener, scope?: Object): EventMappingImpl[] {
-        const mappings: EventMappingImpl[] = [];
+    private getEventMappings(eventType: Event['type'], listener?: EventListener, scope?: Object): EventMappingImpl<Event>[] {
+        const mappings: EventMappingImpl<Event>[] = [];
         for (const mapping of this.eventMap) {
             if (eventType && mapping.event !== eventType) {
                 continue;
@@ -209,8 +209,8 @@ export class EventDispatcher {
      * @param scope     Listener scope which will be mapped.
      * @returns {EventMappingImpl} Instance of the created event mapping.
      */
-    private createMapping(event: Event['type'], listener: EventListener, scope?: Object): EventMappingImpl {
-        const mapping = new EventMappingImpl(event, listener, scope);
+    private createMapping<E extends Event>(event: Event['type'], listener: EventListener<E>, scope?: Object): EventMappingImpl<E> {
+        const mapping = new EventMappingImpl<E>(event, listener, scope);
         this.eventMap.push(mapping);
         return mapping;
     }
@@ -220,7 +220,7 @@ export class EventDispatcher {
      * @param mappings  All mappings to be removed.
      * @returns {boolean} True if mappings have been removed; false if provided mappings are empty.
      */
-    private removeMappings(mappings: EventMappingImpl[]): boolean {
+    private removeMappings(mappings: EventMappingImpl<Event>[]): boolean {
         if (!mappings || mappings.length === 0) {
             return false;
         }
