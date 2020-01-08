@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import {InjectionToken, Injector} from "../src";
+import {Context, InjectionToken, Injector, WebApplicationBundle} from "../src";
 import {AbstractClass} from "./elements/AbstractClass";
 import {AbstractClassImpl} from "./elements/AbstractClassImpl";
 import {SimpleModel2} from "./elements/SimpleModel2";
@@ -11,6 +11,7 @@ import {ClassWithPostConstruct} from "./elements/ClassWithPostConstruct";
 import {ClassWithInjectedToken} from "./elements/ClassWithInjectedToken";
 import {token} from "./elements/injection-token";
 import {ClassWithOptionalInjection} from "./elements/ClassWithOptionalInjection";
+import {RequiredClass} from "./elements/RequiredClass";
 
 describe("Dependency injector configuration", () => {
 
@@ -250,4 +251,47 @@ describe("Apply injections", () => {
         ClassWithInjectAndPreDestroy.onDestroy = resolve;
         injector.destroyInstance(model);
     }));
+
+    it("asSingleton directive in ModuleConfig shall be respected 1", () => {
+        let constructions = 0;
+        RequiredClass.constructionCallback = () => constructions++;
+        const {injector} = new Context().install(...WebApplicationBundle).configure({
+            mappings: [
+                {map: RequiredClass, asSingleton: true, instantiate: true}
+            ]
+        }).initialize();
+        injector.get(RequiredClass);
+        injector.get(RequiredClass);
+        injector.get(RequiredClass);
+        expect(constructions).toBe(1);
+
+    });
+
+    it("asSingleton directive in ModuleConfig shall be respected 2", () => {
+        let constructions = 0;
+        RequiredClass.constructionCallback = () => constructions++;
+        const {injector} = new Context().install(...WebApplicationBundle).configure({
+            mappings: [
+                {map: RequiredClass, asSingleton: true}
+            ]
+        }).initialize();
+        injector.get(RequiredClass);
+        injector.get(RequiredClass);
+        injector.get(RequiredClass);
+        expect(constructions).toBe(1);
+
+    });
+    it("asSingleton directive will fallback to default true value when set in ModuleConfig", () => {
+        let constructions = 0;
+        RequiredClass.constructionCallback = () => constructions++;
+        const {injector} = new Context().install(...WebApplicationBundle).configure({
+            mappings: [
+                RequiredClass
+            ]
+        }).initialize();
+        injector.get(RequiredClass);
+        injector.get(RequiredClass);
+        injector.get(RequiredClass);
+        expect(constructions).toBe(1);
+    });
 });

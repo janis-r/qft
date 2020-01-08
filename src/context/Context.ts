@@ -8,7 +8,6 @@ import {metadata} from "../metadata/metadata";
 import {ContextModuleEvent} from "./event/ContextModuleEvent";
 import {referenceToString} from "../util/StringUtil";
 import {InjectionConfig} from "../metadata/data/InjectionConfig";
-import {InjectedSingletonValueProvider} from "../injector/provider/InjectedSingletonValueProvider";
 
 /**
  * Application context representation class - a hosting environment for application or its sub context
@@ -274,7 +273,6 @@ export class Context extends EventDispatcher {
 
     private prepareInjectorMapping(mapping: ClassType | InjectionConfig): Type[] {
         const {injector} = this;
-
         // We have got a singular entry and such are to be mapped as singletons
         if (!("map" in mapping)) {
             const mappedType = mapping as ClassType;
@@ -302,7 +300,7 @@ export class Context extends EventDispatcher {
 
         // Make it a singleton unless we're explicitly told not to
         const mapAsSingleton = !('asSingleton' in injection) || injection.asSingleton;
-        if (mapAsSingleton && injectionMapping instanceof InjectedSingletonValueProvider) {
+        if (mapAsSingleton && injectionMapping.isSingletonProvider) {
             injectionMapping.asSingleton();
         }
 

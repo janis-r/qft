@@ -48,6 +48,10 @@ export class InjectionMapping<T = any> {
         return this._destroyed;
     }
 
+    get isSingletonProvider():boolean {
+        return this.provider && this.provider instanceof InjectedSingletonValueProvider;
+    }
+
     /**
      * Makes the mapping return a lazily constructed singleton instance of the mapped type, for
      * each consecutive request.
