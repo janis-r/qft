@@ -3,6 +3,7 @@ import {Event} from "../../../eventDispatcher/event/Event";
 import {Type} from "../../../type/Type";
 import {Command} from "../../command/Command";
 import {CommandMapping} from "../CommandMapping";
+
 /**
  * Data object to store event command mapping data.
  */
@@ -17,9 +18,8 @@ export class CommandMappingImpl implements CommandMapping {
      * @param eventType Event type command is mapped to.
      * @param command   Command class which to execute as event is encountered.
      */
-    constructor(
-        public readonly eventType: Event['type'],
-        public readonly command: Type<Command>) {
+    constructor(readonly eventType: Event['type'],
+                readonly command: Type<Command>) {
     }
 
     /**

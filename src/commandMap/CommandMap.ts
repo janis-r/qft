@@ -6,6 +6,7 @@ import {CommandMapping} from "./data/CommandMapping";
 import {Inject} from "../metadata/decorator/Inject";
 import {Injector} from "../injector/Injector";
 import {referenceToString} from "../util/StringUtil";
+import {EventGuard} from "..";
 
 /**
  * Event command map describes event name to command class mappings and is useful as small pieces of control code
@@ -26,13 +27,14 @@ export class CommandMap {
     /**
      * Map event notification to a command class.
      * @param eventType String event name which will tiger execution of a command.
-     * @param command   Command class which should implement <code>Command</code> interface or, at least,
+     * @param command Command class which should implement <code>Command</code> interface or, at least,
      * should have execute method defined with same signature.
      * @param executeOnce Set to true if event mapping should be removed after first successful execution
+     * @param guard Default event guard, guarding command execution from improper events.
      * @returns {CommandMapping} data object which describes mapping and can be used to set command execution
      * only once; or null in case if mapping of requested event type is already mapped to class instance.
      */
-    map(eventType: Event['type'], command: Type<Command>, executeOnce = false): CommandMapping {
+    map(eventType: Event['type'], command: Type<Command>, executeOnce = false, guard?: EventGuard): CommandMapping {
         if (!eventType) {
             throw new Error("CommandMap: A command can not be mapped to an undefined event");
         }
@@ -53,6 +55,10 @@ export class CommandMap {
 
         if (executeOnce) {
             mapping.once();
+        }
+
+        if (guard) {
+            mapping.withGuards(guard);
         }
         return mapping;
     }

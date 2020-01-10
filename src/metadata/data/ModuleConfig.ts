@@ -9,16 +9,16 @@ export interface ModuleConfig {
     /**
      * List of modules particular module is dependant on which have to be loaded for this module to function properly.
      */
-    requires?: (Type | ModuleConfig)[];
+    requires?: Array<Type | ModuleConfig>;
     /**
      * List of types that should be added as singletons to Injector as this modules is mapped or list of explicit
      * injector instructions for very same purpose.
      */
-    mappings?: (ClassType | InjectionConfig)[];
+    mappings?: Array<ClassType | InjectionConfig>;
     /**
      * List of event names that should be mapped to commands as module is added to system scope.
      */
-    commands?: CommandMappingDescriptor[];
+    commands?: Array<CommandMappingDescriptor>;
 }
 
 export const isModuleConfig = (value: unknown): value is ModuleConfig => {

@@ -188,4 +188,15 @@ describe("Command map", () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
         expect(callback).toBeCalled();
     });
+
+    it ("Command guard work", () => {
+        const type = "test";
+        const callback = jest.fn();
+        SimpleCommand.done = callback;
+        commandMap.map(type, SimpleCommand, false, ({data}) => data);
+        commandMap.trigger(new Event(type, false));
+        expect(callback).not.toBeCalled();
+        commandMap.trigger(new Event(type, true));
+        expect(callback).toBeCalled();
+    });
 });
