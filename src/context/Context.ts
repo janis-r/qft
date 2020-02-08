@@ -201,7 +201,9 @@ export class Context extends EventDispatcher {
     }
 
     private prepareModules(): void {
-        this.modules.forEach(module => this.registerModule(module));
+        this.modules.forEach((module, i) => {
+            this.registerModule(module);
+        });
     }
 
     private registerModule(module: Type | ModuleConfig, isTopLevelModule: boolean = true): void {
@@ -215,12 +217,19 @@ export class Context extends EventDispatcher {
         }
 
         let moduleDescriptor: ModuleConfig;
+        if (module === undefined) {
+            console.warn(`Context warn: module cannot be resolved:`);
+            console.warn(this.modules);
+            return;
+        }
+
         if (isModuleConfig(module)) {
             moduleDescriptor = module;
         } else {
             moduleDescriptor = this.getModuleDescriptorByType(module);
             if (!moduleDescriptor) {
                 console.warn(`Context warn: ${referenceToString(module)} has no module metadata available thus it cannot be a module in Context understanding.`);
+                console.warn(this.modules);
                 return;
             }
         }
@@ -229,7 +238,9 @@ export class Context extends EventDispatcher {
         // just as module might want to override some mappings from required module and that require its mappings to be
         // executed after imported module
         if (moduleDescriptor.requires && moduleDescriptor.requires.length > 0) {
-            moduleDescriptor.requires.forEach(requiredModule => this.registerModule(requiredModule, false));
+            moduleDescriptor.requires.forEach((requiredModule,i) => {
+                this.registerModule(requiredModule, false)
+            });
         }
 
         moduleMetadata.set(module, moduleDescriptor);
@@ -294,6 +305,8 @@ export class Context extends EventDispatcher {
             injectionMapping.toExisting(injection.useExisting);
         } else if (injection.useValue) {
             injectionMapping.toValue(injection.useValue);
+        } else if(injection.useFactory) {
+            injectionMapping.toFactory(injection.useFactory);
         } else if (injection.useType) {
             injectionMapping.toType(injection.useType as Type);
         }
@@ -310,18 +323,22 @@ export class Context extends EventDispatcher {
     }
 
     private initializeModules(): void {
-        this.moduleMetadata.forEach((metadata, module) => {
+        const {moduleMetadata, injector} = this;
+        moduleMetadata.forEach((metadata, module) => {
             if (isModuleConfig(module)) {
+                if (module.setup) {
+                    module.setup(injector);
+                }
                 // If module is mapped without module class but with only descriptor, there is nothing to initialize
                 return;
             }
 
             // Let us be using sealed modules for a start just as there is no reasonable scenario in which modules
             // should be added and removed dynamically
-            this.injector.map(module).asSingleton().seal();
+            injector.map(module).asSingleton().seal();
 
             // Instantiate!
-            this.injector.get(module);
+            injector.get(module);
         });
     }
 

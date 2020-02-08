@@ -12,7 +12,7 @@ export * from "./context/event/ContextLifecycleEvent";
 export * from "./context/event/ContextModuleEvent";
 export * from "./context/extension/commandMap/CommandMapExtension";
 export * from "./context/extension/eventDispatcher/EventDispatcherExtension";
-export * from "./context/WebApplicationContext";
+export * from "./context/AppContext";
 export * from "./context/Context";
 
 export * from "./eventDispatcher/api/EventGuard";

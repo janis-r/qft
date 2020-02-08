@@ -1,11 +1,14 @@
 import {InjectionConfig} from "./InjectionConfig";
 import {CommandMappingDescriptor} from "./CommandMappingDescriptor";
 import {ClassType, Type} from "../../type";
+import {Injector} from "../..";
 
 /**
  * System module configuration.
  */
 export interface ModuleConfig {
+    id?: string;
+    toString: () => string;
     /**
      * List of modules particular module is dependant on which have to be loaded for this module to function properly.
      */
@@ -19,6 +22,11 @@ export interface ModuleConfig {
      * List of event names that should be mapped to commands as module is added to system scope.
      */
     commands?: Array<CommandMappingDescriptor>;
+    /**
+     * Module setup method that shall be invoked upon module initialization.
+     * @param injector
+     */
+    setup?: (injector: Injector) => void;
 }
 
 export const isModuleConfig = (value: unknown): value is ModuleConfig => {
@@ -26,10 +34,10 @@ export const isModuleConfig = (value: unknown): value is ModuleConfig => {
         return false;
     }
     const keys = Object.keys(value);
-    if (keys.length > 3) {
+    if (keys.length > 6) {
         return false;
     }
-    if (keys.some(key => ['requires', 'mappings', 'commands'].indexOf(key) === -1)) {
+    if (keys.some(key => ['requires', 'mappings', 'commands', 'setup', 'id', 'toString'].indexOf(key) === -1)) {
         return false;
     }
     return true;
