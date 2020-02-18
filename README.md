@@ -1,5 +1,5 @@
-# QTF
+# QFT
 
 Micro framework for TypeScript/JavaScript, serving  macro features like module management, 
-dependency injection and command.
+dependency injection and command execution.
 

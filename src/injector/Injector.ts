@@ -344,6 +344,9 @@ export class Injector extends EventDispatcher {
             return undefined;
         }
         const mapping = [...this.mappings.values()].find(mapping => mapping.satisfiesType(type));
-        return mapping?.type;
+        if (mapping) {
+            return mapping.type;
+        }
+        return undefined;
     }
 }

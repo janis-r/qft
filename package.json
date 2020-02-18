@@ -1,7 +1,7 @@
 {
   "name": "qft",
   "description": "Lightweight micro framework for TypeScript/JavaScript",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "index.js",
   "module": ".esnext/index.js",
   "scripts": {
@@ -24,20 +24,21 @@
     "typescript",
     "framework",
     "dependency-injection",
-    "ioc"
+    "ioc",
+    "command-map"
   ],
   "dependencies": {
-    "jdr-cmd-utils": "0.0.2",
     "reflect-metadata": "^0.1.12"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
     "@types/node": "^12.7.5",
     "copyfiles": "^2.1.1",
+    "jdr-cmd-utils": "0.0.2",
     "jest": "^24.9.0",
     "rimraf": "^3.0.0",
     "ts-jest": "^24.0.2",
     "ts-node": "^7.0.1",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.5"
   }
 }
