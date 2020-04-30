@@ -217,8 +217,8 @@ export class Context extends EventDispatcher {
         }
 
         let moduleDescriptor: ModuleConfig;
-        if (module === undefined) {
-            console.warn(`Context warn: module cannot be resolved. Modules: %o`, this.modules);
+        if (!module) {
+            console.warn(`Context warn: module cannot be resolved. Module: %o, isTopLevelModule: %b`, module, isTopLevelModule);
             return;
         }
 
@@ -236,8 +236,16 @@ export class Context extends EventDispatcher {
         // just as module might want to override some mappings from required module and that require its mappings to be
         // executed after imported module
         if (moduleDescriptor.requires && moduleDescriptor.requires.length > 0) {
-            moduleDescriptor.requires.forEach((requiredModule, i) => {
-                this.registerModule(requiredModule, false)
+            moduleDescriptor.requires.forEach((requiredModule, index) => {
+                if (requiredModule === undefined) {
+                    console.warn(
+                        `Context warn: Module dependency cannot be resolved.\nModule: %o,\nIndex: %d`,
+                        moduleDescriptor,
+                        index
+                    );
+                } else {
+                    this.registerModule(requiredModule, false);
+                }
             });
         }
 
