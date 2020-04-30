@@ -219,9 +219,10 @@ export class InjectionMapping<T = any> {
         if (!this.defaultProviderSet && this.provider) {
             // console.log("provider", this.provider);
             console.warn(
-                `Injector already has mapping for ${referenceToString(this.type)} and its being overridden. ` +
+                `Injector already has mapping for %o and its being overridden. ` +
                 `This could be or could not be error, buy it's suggested to use injector.unMap() ` +
-                `before new mapping is set.`
+                `before new mapping is set.`,
+                this.type
             );
         }
 

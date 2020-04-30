@@ -14,7 +14,7 @@ export function Optional(): Function {
             //This one is a constructor param entry
             metadataInternal.getTypeDescriptor(target).setOptionalConstructorArgument(index);
         } else {
-            console.warn(`@Optional meta tag is applied to non constructor argument or class property named "${variable}" and will make no effect`);
+            console.warn(`@Optional meta tag is applied to non constructor argument or class property named "%s" and will make no effect`, variable);
         }
 
         return target;

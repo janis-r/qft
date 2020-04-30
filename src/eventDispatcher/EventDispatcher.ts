@@ -48,9 +48,12 @@ export class EventDispatcher {
             return this.createMapping(event, listener, scope);
         }
 
-        const message = `EventDispatcher: addListener already has a mapping. Remove it before calling addListener again.`;
-        const info = `event:${event} listener:${listener} scope:${scope}`;
-        console.warn(`${message} ${info}`);
+        console.warn(
+            `EventDispatcher: addListener already has a mapping. Remove it before calling addListener again - event: %s, listener: %o, scope: %s`,
+            event,
+            listener,
+            scope
+        );
 
         return null;
     }

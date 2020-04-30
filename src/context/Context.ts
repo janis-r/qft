@@ -211,15 +211,14 @@ export class Context extends EventDispatcher {
 
         if (moduleMetadata.has(module)) {
             if (isTopLevelModule) {
-                console.warn(`Context warn: ${referenceToString(module)} is mapped several times to Context.\nNot a big problem as second mapping will be ignored but this indicates that there could be some error.`);
+                console.warn(`Context warn: %s is mapped several times to Context.\nNot a big problem as second mapping will be ignored but this indicates that there could be some error.`, referenceToString(module));
             }
             return;
         }
 
         let moduleDescriptor: ModuleConfig;
         if (module === undefined) {
-            console.warn(`Context warn: module cannot be resolved:`);
-            console.warn(this.modules);
+            console.warn(`Context warn: module cannot be resolved. Modules: %o`, this.modules);
             return;
         }
 
@@ -228,8 +227,7 @@ export class Context extends EventDispatcher {
         } else {
             moduleDescriptor = this.getModuleDescriptorByType(module);
             if (!moduleDescriptor) {
-                console.warn(`Context warn: ${referenceToString(module)} has no module metadata available thus it cannot be a module in Context understanding.`);
-                console.warn(this.modules);
+                console.warn(`Context warn: %o has no module metadata available thus it cannot be a module in Context understanding. Modules: %o`, module, this.modules);
                 return;
             }
         }
@@ -238,7 +236,7 @@ export class Context extends EventDispatcher {
         // just as module might want to override some mappings from required module and that require its mappings to be
         // executed after imported module
         if (moduleDescriptor.requires && moduleDescriptor.requires.length > 0) {
-            moduleDescriptor.requires.forEach((requiredModule,i) => {
+            moduleDescriptor.requires.forEach((requiredModule, i) => {
                 this.registerModule(requiredModule, false)
             });
         }
@@ -260,7 +258,7 @@ export class Context extends EventDispatcher {
         }
         const {moduleDescriptor} = metadata.getTypeDescriptor(module);
         if (!isModuleConfig(moduleDescriptor)) {
-            console.warn(`Context warn: ${referenceToString(module)} module metadata in wrong format! ${JSON.stringify(moduleDescriptor)}`);
+            console.warn(`Context warn: %o module metadata in wrong format! %o`, module, moduleDescriptor);
         }
         return moduleDescriptor || null;
     }
@@ -305,7 +303,7 @@ export class Context extends EventDispatcher {
             injectionMapping.toExisting(injection.useExisting);
         } else if (injection.useValue) {
             injectionMapping.toValue(injection.useValue);
-        } else if(injection.useFactory) {
+        } else if (injection.useFactory) {
             injectionMapping.toFactory(injection.useFactory);
         } else if (injection.useType) {
             injectionMapping.toType(injection.useType as Type);

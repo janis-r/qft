@@ -44,9 +44,11 @@ export class CommandMap {
 
         const mappings = this.getEventToCommandMappings(eventType);
         if (mappings.some(entry => entry.command === command)) {
-            const message = `CommandMap: Event to command mapping already exists. UnMap it before calling map again.`;
-            const info = `event:${eventType} command: ${referenceToString(command)}`;
-            console.warn(message + " " + info);
+            console.warn(
+                `CommandMap: Event to command mapping already exists. UnMap it before calling map again - event: %s, command: %o`,
+                eventType,
+                command
+            );
             return null;
         }
 
